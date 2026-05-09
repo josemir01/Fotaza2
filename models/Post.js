@@ -1,40 +1,37 @@
 import { DataTypes, Model } from "sequelize";
 import sequelize from "../db/config";
 
-class User extends Model { }
+class Post extends Model {}
 
-User.init(
+Post.init(
     {
-        userid:{
+        postid:{
             type: DataTypes.INTEGER,
             AutoIncrement: true,
             primarykey:true,
         },
-        firstName: {
-            type: DataTypes.STRING,
+        userid:{
+            type: DataTypes.INTEGER,
             allowNull: false,
         },
-        lastName: {
-            type: DataTypes.STRING,
+        contentURL: {
+            type: DataTypes.BLOB,
             allowNull: false,
         },
-        email:{
+        description:{
             type: DataTypes.STRING,
-            allowNull: false,
-        },
-        birthDate:{
-            type: DataTypes.DATEONLY
+            allowNull: true,
         },
         createdAt:{
-            type: DataTypes.DATEONLY,
-            allowNull: false,
+            type: DataTypes.DATE,
+            allowNull:false,
         }
     },
     {
         
         sequelize, 
-        modelName: 'User',
-        schema: 'user',
+        modelName: 'Content',
+        schema: 'content',
         createdAt: true,
         deletedAt: true,
     },

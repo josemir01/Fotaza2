@@ -1,40 +1,37 @@
 import { DataTypes, Model } from "sequelize";
 import sequelize from "../db/config";
 
-class User extends Model { }
+class Comment extends Model {}
 
-User.init(
+Comment.init(
     {
-        userid:{
+        Commentid:{
             type: DataTypes.INTEGER,
             AutoIncrement: true,
             primarykey:true,
         },
-        firstName: {
+        postid:{
+            type: DataTypes.INTEGER,
+            allowNull: false,
+        },
+        userid: {
             type: DataTypes.STRING,
             allowNull: false,
         },
-        lastName: {
+        content:{
             type: DataTypes.STRING,
             allowNull: false,
-        },
-        email:{
-            type: DataTypes.STRING,
-            allowNull: false,
-        },
-        birthDate:{
-            type: DataTypes.DATEONLY
         },
         createdAt:{
-            type: DataTypes.DATEONLY,
-            allowNull: false,
+            type: DataTypes.DATE,
+            allowNull:false,
         }
     },
     {
         
         sequelize, 
-        modelName: 'User',
-        schema: 'user',
+        modelName: 'Content',
+        schema: 'content',
         createdAt: true,
         deletedAt: true,
     },

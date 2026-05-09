@@ -1,8 +1,6 @@
 import express from 'express'
 import 'dotenv/config'
-//const sequelize = require("./db");
-import { Sequelize } from './db';
-import sequelize from './db/config';
+import sequelize from './db/config.js';
 const app=express()
 
 const PORT=process.env.PORT
@@ -43,6 +41,6 @@ app.listen(PORT,(err)=>{
 })
 
 //inicio del servidor
-app.listen(PORT ,()=>{
-    console.log(`servidor corriendo en ${PORT}`)
-})
+//app.listen(PORT ,()=>{
+  //  console.log(`servidor corriendo en ${PORT}`)
+//})
