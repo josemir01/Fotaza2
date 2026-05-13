@@ -1,22 +1,14 @@
 import { DataTypes, Model } from "sequelize";
-import sequelize from "../db/config";
+import sequelize from "../db/config.js";
 
-class Report extends Model {}
+export class Report extends Model {}
 
 Report.init(
     {
         reportid:{
             type: DataTypes.INTEGER,
-            AutoIncrement: true,
-            primarykey:true,
-        },
-        userid:{
-            type: DataTypes.INTEGER,
-            allowNull: true,
-        },
-        postid: {
-            type: DataTypes.STRING,
-            allowNull: true,
+            autoIncrement: true,
+            primaryKey:true,
         },
         motive:{
             type: DataTypes.STRING,
@@ -26,10 +18,6 @@ Report.init(
             type: DataTypes.STRING,
             allowNull: false,
         },
-        createdAt:{
-            type: DataTypes.DATE,
-            allowNull:false,
-        }
     },
     {
         
@@ -40,3 +28,4 @@ Report.init(
         deletedAt: true,
     },
 );
+

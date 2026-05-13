@@ -1,18 +1,14 @@
 import { DataTypes, Model } from "sequelize";
-import sequelize from "../db/config";
+import sequelize from "../db/config.js";
 
-class image extends Model {}
+export class image extends Model {}
 
 image.init(
     {
         imageid:{
             type: DataTypes.INTEGER,
-            AutoIncrement: true,
-            primarykey:true,
-        },
-        postid:{
-            type: DataTypes.INTEGER,
-            allowNull: false,
+            autoIncrement: true,
+            primaryKey:true,
         },
         image:{
             type: DataTypes.BLOB,
@@ -27,3 +23,4 @@ image.init(
         deletedAt: true,
     },
 );
+

@@ -1,28 +1,16 @@
 import { DataTypes, Model } from "sequelize";
-import sequelize from "../db/config";
+import sequelize from "../db/config.js";
 
-class Like extends Model {}
+export class Like extends Model {}
 
 Like.init(
     {
         likeid:{
             type: DataTypes.INTEGER,
-            AutoIncrement: true,
-            primarykey:true,
+            autoIncrement: true,
+            primaryKey:true,
             unique:true,
         },
-        postid:{
-            type: DataTypes.INTEGER,
-            allowNull: false,
-        },
-        userid: {
-            type: DataTypes.STRING,
-            allowNull: false,
-        },
-        createdAt:{
-            type: DataTypes.DATE,
-            allowNull:false,
-        }
     },
     {
         sequelize, 
@@ -32,3 +20,5 @@ Like.init(
         deletedAt: true,
     },
 );
+
+

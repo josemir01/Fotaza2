@@ -26,7 +26,7 @@ res.render("login")
 
 //conexion a base de datos
 
-sequelize.sync()
+sequelize.sync({alter:true})
 .then(()=>{
 app.listen(PORT,(err)=>{
     if(err){

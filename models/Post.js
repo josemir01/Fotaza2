@@ -1,18 +1,14 @@
 import { DataTypes, Model } from "sequelize";
-import sequelize from "../db/config";
+import sequelize from "../db/config.js";
 
-class Post extends Model {}
+export class Post extends Model {}
 
 Post.init(
     {
         postid:{
             type: DataTypes.INTEGER,
-            AutoIncrement: true,
-            primarykey:true,
-        },
-        userid:{
-            type: DataTypes.INTEGER,
-            allowNull: false,
+            autoIncrement: true,
+            primaryKey:true,
         },
         contentURL: {
             type: DataTypes.BLOB,
@@ -22,16 +18,12 @@ Post.init(
             type: DataTypes.STRING,
             allowNull: true,
         },
-        createdAt:{
-            type: DataTypes.DATE,
-            allowNull:false,
-        }
     },
     {
         
         sequelize, 
-        modelName: 'Content',
-        schema: 'content',
+        modelName: 'Post',
+        schema: 'post',
         createdAt: true,
         deletedAt: true,
     },

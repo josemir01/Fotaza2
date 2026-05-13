@@ -1,7 +1,7 @@
 import { DataTypes, Model } from "sequelize";
-import sequelize from "../db/config";
+import sequelize from "../db/config.js";
 
-class Follow extends Model {}
+export class Follow extends Model {}
 
 Follow.init(
     {
@@ -15,10 +15,6 @@ Follow.init(
             allowNull: false,
             unique:true,
         },
-        createdAt:{
-            type: DataTypes.DATE,
-            allowNull:false,
-        }
     },
     {
         sequelize, 
@@ -28,3 +24,4 @@ Follow.init(
         deletedAt: true,
     },
 );
+
