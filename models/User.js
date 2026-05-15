@@ -21,7 +21,7 @@ User.init(
             unique:true,
         },
         password:{
-            type: DataTypes.INTEGER,
+            type: DataTypes.STRING,
             allowNull:false,
         },
         birthDate:{
@@ -35,7 +35,7 @@ User.init(
     {
         sequelize, 
         modelName: 'User',
-        tableName: 'users',
+        tableName: 'user',
         createdAt: true,
         deletedAt: true,
     },

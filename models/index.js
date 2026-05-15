@@ -12,13 +12,24 @@ import { Hashtag } from "./Hashtag.js"
 User.hasMany(Post)
 Post.belongsTo(User)
 
+
 //un usuario tiene muchos comentarios (1:n)
 User.hasMany(Comment)
 Comment.belongsTo(User)
 
-//un usuario tiene muchos seguidores (1:n)
-User.hasMany(Follow)
-Follow.belongsTo(User)
+//un usuario sigue a muchos usuarios
+//un usuario tiene muchos seguidores (n:m)
+User.belongsToMany(User, {
+    through: Follow,
+    as: 'Followers',
+    foreignKey: 'followingId'
+})
+
+User.belongsToMany(User, {
+    through: Follow,
+    as: 'Following',
+    foreignKey: 'followerId'
+})
 
 //un usuario tiene muchos likes( me interesa) (1:n)
 User.hasMany(Like)
@@ -58,13 +69,25 @@ User.hasMany(Report)
 
 
 //esta relacion es de muchos a muchos
-//publicaciones y hashtags (n:n)
-//Post.belongsToMany(Hashtag, { through: 'PostHashtags' })
-//Hashtag.belongsToMany(Post, { through: 'PostHashtags' })
+//publicaciones y hashtags (n:m)
+Post.belongsToMany(Hashtag, { through: 'PostHashtags' })
+Hashtag.belongsToMany(Post, { through: 'PostHashtags' })
 
 //relacion de muchos a muchos
-//usuarios y publicaciones (n:n)
+//usuarios y publicaciones (n:m)
 User.belongsToMany(Post, { through: 'SavedPosts' })
 Post.belongsToMany(User, { through: 'SavedPosts' })
 
 
+
+export async function connectDatabase() {
+    try {
+        await sequelize.authenticate(); // testear la conexion
+        console.log('[+] Conexion a bd establecida')
+        await sequelize.sync({ alter: true });
+        console.log('[+] Sincronizado de modelos')
+    } catch (error) {
+        console.error('[+] Error en la conexion a la bd', error)
+        throw error
+    }
+}

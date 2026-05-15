@@ -8,12 +8,10 @@ Follow.init(
         followerid:{
             type: DataTypes.INTEGER,
             allowNull:false,
-            unique:true,
         },
         followeid:{
             type: DataTypes.INTEGER,
             allowNull: false,
-            unique:true,
         },
     },
     {

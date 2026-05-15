@@ -14,6 +14,10 @@ image.init(
             type: DataTypes.BLOB,
             allowNull: false,
         },
+        comentDisable:{
+            type:DataTypes.BOOLEAN,
+            allowNull: true,
+        }
     },
     {
         sequelize, 
