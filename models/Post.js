@@ -10,10 +10,6 @@ Post.init(
             autoIncrement: true,
             primaryKey:true,
         },
-        contentURL: {
-            type: DataTypes.BLOB,
-            allowNull: false,
-        },
         description:{
             type: DataTypes.STRING,
             allowNull: true,

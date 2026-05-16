@@ -7,6 +7,7 @@ import { Rating } from "./rating.js"
 import { image } from "./image.js"
 import { Report } from "./Report.js"
 import { Hashtag } from "./Hashtag.js"
+import { Collection } from "./Collection.js"
 
 //un usuario tiene muchas publicaciones (1:n)
 User.hasMany(Post)
@@ -39,9 +40,9 @@ Like.belongsTo(User)
 User.hasMany(Rating)
 Rating.belongsTo(User)
 
-//una publicacion tiene muchos comentarios (1:n)
-Post.hasMany(Comment)
-Comment.belongsTo(Post)
+//una imagen tiene muchos comentarios (1:n)
+Image.hasMany(Comment)
+Comment.belongsTo(image)
 
 //una publicacion tiene muchos Likes(me interesa) (1:n)
 Post.hasMany(Like)
@@ -67,18 +68,22 @@ Comment.hasMany(Report)
 Report.belongsTo(User)
 User.hasMany(Report)
 
+//un usuario tiene muchas collections(1:n)
+User.hasMany(Collection)
+Collection.belongsTo(User)
+
+//collections tiene una relacion de (n:m) con publicacion
+Collection.belongsToMany(Post,{through: 'SavedPosts'})
+Post.belongsToMany(Collection,{through: 'SavedPosts'})
 
 //esta relacion es de muchos a muchos
 //publicaciones y hashtags (n:m)
 Post.belongsToMany(Hashtag, { through: 'PostHashtags' })
 Hashtag.belongsToMany(Post, { through: 'PostHashtags' })
 
-//relacion de muchos a muchos
-//usuarios y publicaciones (n:m)
-User.belongsToMany(Post, { through: 'SavedPosts' })
-Post.belongsToMany(User, { through: 'SavedPosts' })
-
-
+//usuario y publicacion (1:n)
+User.hasMany(Post)
+Post.belongsTo(User)
 
 export async function connectDatabase() {
     try {

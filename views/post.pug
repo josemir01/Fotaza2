@@ -1,0 +1,15 @@
+extends layout.pug
+
+block content 
+
+form
+
+h2 Crear nueva publicación
+  form(action="/crear-post", method="POST")
+    .mb-3
+      label.form-label Título de la foto
+      input.form-control(type="text", name="titulo")
+    .mb-3
+      label.form-label URL de la imagen
+      input.form-control(type="text", name="url")
+    button.btn.btn-success(type="submit") Publicar

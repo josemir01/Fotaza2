@@ -1,0 +1,15 @@
+extends layout.pug
+
+block content
+  h2 Resultados para: "#{busqueda}"
+  
+  if resultados.length > 0
+    ul.list-group.mt-3
+      each item in resultados
+        li.list-group-item
+          strong= item.nombre
+          span.badge.bg-primary.ms-2= item.categoria
+  else
+    div.alert.alert-warning.mt-3
+      p No se encontraron resultados para tu búsqueda.
+

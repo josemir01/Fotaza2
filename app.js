@@ -1,7 +1,8 @@
 import express from 'express'
 import 'dotenv/config'
 import sequelize from './db/config.js';
-import router from './routers/UserRoute.js';
+import UserRoute from './routers/UserRoute.js';
+import PostRoute from './routers/PostRoute.js';
 const app = express()
 
 const PORT = process.env.PORT
@@ -16,8 +17,7 @@ app.use(express.urlencoded({ extended: true }))
 
 
 app.use('/usuario',UserRoute)
-
-app.use('/gastos', gastosRouter);
+app.use('/post',PostRoute)
 
 //pagina de inicio
 app.get("/", (req, res) => {
@@ -27,6 +27,24 @@ app.get("/", (req, res) => {
 app.get("/login", (req, res) => {
     res.render("login")
 })
+
+app.get("/buscar",(req,res)=>{
+    const busqueda=req.query.termino
+})
+
+app.post("/crear-post",(req,res)=>{
+    //logica al recibir los datos de la publicacion
+
+})
+
+app.get("/login",(req,res)=>{
+    res.render("login")
+})
+//ruta para recibir los datos del formulario
+app.post("/login",(req,res)=>{
+    //logica al recibir los datos del formulario
+})
+
 
 
 

@@ -12,6 +12,6 @@ router.get('/', getUsers)
 
 router.post('/', createUser)
 
-router.post('/', getUserById)
+//router.post('/:userId', getUserById)
 
 export default router
