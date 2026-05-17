@@ -8,9 +8,11 @@ import {
 
 const router = Router()
 
-router.get('/', getUsers)
-
-router.post('/', createUser)
+router.get('/', getUsers)                          // GET  /usuario
+router.get('/:userId', getUserById)                // GET  /usuario/5
+router.get('/:userId/editar', getEditUser)         // GET  /usuario/5/editar
+router.post('/registro', createUser)               // POST /usuario/registro
+router.post('/:userId/editar', updateUser)         // POST /usuario/5/editar
 
 //router.post('/:userId', getUserById)
 
