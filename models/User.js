@@ -31,6 +31,18 @@ User.init(
             type: DataTypes.BLOB,
             allowNull:true,
         },
+        bio:{
+            type: DataTypes.TEXT,
+            allowNull:true,
+        },
+        rol:{
+            type: DataTypes.STRING,
+            defaultValue: 'usuario'
+        },
+        estadoUsuario:{
+            type: DataTypes.STRING,
+            defaultValue: 'activa'
+        }
     },
     {
         sequelize, 

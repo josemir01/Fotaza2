@@ -8,6 +8,7 @@ import { image } from "./image.js"
 import { Report } from "./Report.js"
 import { Hashtag } from "./Hashtag.js"
 import { Collection } from "./Collection.js"
+import  sequelize  from "sequelize"
 
 //un usuario tiene muchas publicaciones (1:n)
 User.hasMany(Post)

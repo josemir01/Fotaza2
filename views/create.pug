@@ -1,0 +1,43 @@
+extends layout.pug
+
+block metadata
+  title Crear publicación
+
+block content
+  .row.justify-content-center
+    .col-md-7
+      .card.shadow
+        .card-body
+          h2.mb-4 Crear nueva publicación
+          if error
+            .alert.alert-danger= error
+          form(action="/post/crear", method="POST", enctype="multipart/form-data")
+            .mb-3
+              label.form-label(for="titulo") Título
+              input#titulo.form-control(
+                type="text",
+                name="titulo",
+              )
+            .mb-3
+              label.form-label(for="descripcion") Descripción (opcional)
+              textarea#descripcion.form-control(
+                name="descripcion",
+                rows="3",
+              )
+            .mb-3
+              label.form-label(for="imagenes") Imágenes
+              input#imagenes.form-control(
+                type="file",
+                name="imagenes",
+                accept="image/*",
+              )
+            .mb-3
+              label.form-label(for="opciones") Etiquetas
+              select#opciones.form-select(name="opciones", required)
+                option(value="", disabled, selected) -- Seleccioná un hashtag --
+                if allTags && allTags.length > 0
+                  each tag in allTags
+                    option(value=tag.hashtagid)= tag.name
+                else
+                  option(disabled) No hay hashtags disponibles
+            button.btn.btn-success.w-100(type="submit") Publicar
