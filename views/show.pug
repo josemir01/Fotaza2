@@ -1,0 +1,18 @@
+extends  layout.pug 
+
+title publicacion
+block content 
+    h4 comentarios 
+        if post.Comments && post.Comments.length
+            each comment in post.Comments
+                span=comment.user.fullname
+                
+                p.mb-0=comment.content 
+        else
+            p no hay comentarios
+
+        form(action=`/post/${post.postid}/imagen/${img.imageid}/comentar` method="POST")
+            input.form-control(name="content" placeholder="Comentar esta imagen")
+            button.btn.btn-primary(type="submit") Comentar    
+
+
