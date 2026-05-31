@@ -19,7 +19,7 @@ Conversation.init(
     {
         sequelize, 
         modelName: 'Conversation',
-        schema: 'conversation',
+        tableName: 'conversation',
         createdAt: true,
         deletedAt: true,
     },

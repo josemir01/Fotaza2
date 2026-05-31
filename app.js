@@ -4,6 +4,8 @@ import sequelize from './db/config.js';
 import UserRoute from './routers/UserRoute.js';
 import PostRoute from './routers/PostRoute.js';
 import './models/index.js'
+import { connectDatabase } from './models/index.js'
+import session from 'express-session'
 const app = express()
 
 const PORT = process.env.PORT
@@ -15,6 +17,14 @@ app.set('views', './views')
 //middlewares
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
+app.use(express.static('public'))
+
+//sesion
+app.use(session({
+  secret: 'mi_secreto',
+  resave: false,
+  saveUninitialized: false
+}))
 
 //Rutas
 app.use('/usuario',UserRoute)
@@ -24,7 +34,9 @@ app.use('/post',PostRoute)
 app.get("/", (req, res) => {
     res.render("home")
 })
-
+app.get('/login', (req, res) => {
+  res.render('login')
+})
 // app.get("/login", (req, res) => {
 //     res.render("login")
 // })

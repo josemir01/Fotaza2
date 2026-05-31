@@ -17,7 +17,11 @@ Collection.init(
     isPrivate:{
         type:DataTypes.BOOLEAN,
         defaultValue:false,
-    }
+    },
+    idUser: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+    },
 },
 {
     sequelize,

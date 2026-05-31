@@ -11,11 +11,19 @@ Like.init(
             primaryKey:true,
             unique:true,
         },
+        idUser: {
+            type: DataTypes.INTEGER,
+            allowNull: true,
+        },
+        idPost: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        },
     },
     {
         sequelize, 
         modelName: 'Like',
-        schema: 'like',
+        tableName: 'like',
         createdAt: true,
         deletedAt: true,
     },

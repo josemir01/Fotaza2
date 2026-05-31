@@ -17,13 +17,21 @@ Rating.init(
         value:{
             type: DataTypes.INTEGER,
             allowNull:false,
-        }
+        },
+        idUser: {
+            type: DataTypes.INTEGER,
+            allowNull: true,
+        },
+        idPost: {
+            type: DataTypes.INTEGER,
+            allowNull: true,
+        },
     },
     {
         
         sequelize, 
         modelName: 'Rating',
-        schema: 'rating',
+        tableName: 'rating',
         createdAt: true,
         deletedAt: true,
     },

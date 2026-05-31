@@ -1,15 +1,20 @@
 extends layout.pug
+title publicaciones
+block content
+  .container.mt-4
+    h2 Publicaciones
 
-block content 
+    if posts && posts.length
+      each post in posts
+        .card.mb-3
+          .card-body
+            h5= post.title
+            p= post.description
 
-form
+            if post.Images && post.Images.length
+              each img in post.Images
+                img.img-fluid.rounded(src=img.image, style="max-width:300px")
+    else
+      p No hay publicaciones todavía
 
-h2 Crear nueva publicación
-  form(action="/crear-post", method="POST")
-    .mb-3
-      label.form-label Título de la foto
-      input.form-control(type="text", name="titulo")
-    .mb-3
-      label.form-label URL de la imagen
-      input.form-control(type="text", name="url")
-    button.btn.btn-success(type="submit") Publicar
+

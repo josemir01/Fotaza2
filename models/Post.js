@@ -10,16 +10,24 @@ Post.init(
             autoIncrement: true,
             primaryKey:true,
         },
+        title: {
+            type: DataTypes.STRING,
+            allowNull: false,
+        },
         description:{
             type: DataTypes.STRING,
             allowNull: true,
+        },
+        idUser: {
+            type: DataTypes.INTEGER,
+            allowNull: false,
         },
     },
     {
         
         sequelize, 
         modelName: 'Post',
-        schema: 'post',
+        tableName: 'post',
         createdAt: true,
         deletedAt: true,
     },

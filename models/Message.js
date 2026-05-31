@@ -12,7 +12,7 @@ Message.init(
     {
         sequelize, 
         modelName: 'Message',
-        schema: 'message',
+        tableName: 'message',
         createdAt: true,
         deletedAt: true,
     },

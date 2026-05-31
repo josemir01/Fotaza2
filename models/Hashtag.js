@@ -19,7 +19,7 @@ Hashtag.init(
     {
         sequelize, 
         modelName: 'Hashtag',
-        schema: 'hashtag',
+        tableName: 'hashtag',
         createdAt: true,
         deletedAt: true,
     },

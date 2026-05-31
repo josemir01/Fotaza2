@@ -18,12 +18,24 @@ Report.init(
             type: DataTypes.STRING,
             allowNull: false,
         },
+        idUser: {
+            type: DataTypes.INTEGER,
+            allowNull: true,
+        },
+        idPost: {
+            type: DataTypes.INTEGER,
+            allowNull: true,
+        },
+        idComment: {
+            type: DataTypes.INTEGER,
+            allowNull: true,
+        }
     },
     {
         
         sequelize, 
         modelName: 'Report',
-        schema: 'report',
+        tableName: 'report',
         createdAt: true,
         deletedAt: true,
     },

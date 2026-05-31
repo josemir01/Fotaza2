@@ -37,19 +37,19 @@ User.init(
         },
         rol:{
             type: DataTypes.STRING,
-            defaultValue: 'usuario'
+            defaultValue: 'usuario',
         },
         estadoUsuario:{
             type: DataTypes.STRING,
-            defaultValue: 'activa'
-        }
+            defaultValue: 'activa',
+        },
     },
     {
         sequelize, 
         modelName: 'User',
         tableName: 'user',
         createdAt: true,
-        deletedAt: true,
+        paranoid:  true,
     },
 );
 

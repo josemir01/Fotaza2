@@ -14,12 +14,24 @@ Comment.init(
             type: DataTypes.STRING,
             allowNull: false,
         },
+        idUser: {
+            type: DataTypes.INTEGER,
+            allowNull: false,
+        },
+        idPost: {
+            type: DataTypes.INTEGER,
+            allowNull: false,
+        },
+        idImage:{
+            type: DataTypes.INTEGER,
+            allowNull: false,
+        }
     },
     {
         
         sequelize, 
         modelName: 'Comment',
-        schema: 'comment',
+        tableName: 'comment',
         createdAt: true,
         deletedAt: true,
     },

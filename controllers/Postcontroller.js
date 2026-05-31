@@ -1,23 +1,81 @@
-import { NUMBER } from 'sequelize'
 import { Post } from '../models/Post.js'
 import { getUserById } from './Usercontroller.js'
 import { User } from '../models/User.js'
+import { Image } from '../models/image.js'
 
 
 
+//Hashtags
+async function fetchAllHashtags() {
+    return await Hashtag.findAll({ order: [['name', 'ASC']] })
+}
+
+// GET /post/hashtag/:hashtagId
+export async function getPostsByHashtag(req, res) {
+    const hashtagId = Number(req.params.hashtagId)
+    try {
+        const tag = await Hashtag.findByPk(hashtagId, {
+            include: [{
+                model: Post,
+                through: { attributes: [] },
+                include: [{ model: User, attributes: ['userid', 'fullName', 'avatar'] }]
+            }]
+        })
+        if (!tag) return res.status(404).render('error', { msg: 'Hashtag no encontrado' })
+        res.render('post/byHashtag', { tag, posts: tag.Posts })
+    } catch (error) {
+        console.error('Error al obtener publicaciones por hashtag:', error)
+        res.status(500).render('error', { msg: 'Error al obtener las publicaciones con ese tag' })
+    }
+}
 //////////////////////////////////////////////////////////////////////////////
+
+//Comment
+
+export async function createComment(req, res) {
+    try {
+        const { content } = req.body
+        const postId = Number(req.params.postId)
+
+        const userId = 1 // temporal
+
+        await Comment.create({
+            content,
+            idUser: userId,
+            idPost: postId
+        })
+
+        res.redirect('/post')
+    } catch (error) {
+        console.error('Error al crear un comentario:', error)
+        res.status(500).render('error', { msg: 'Error al crear un comentario' })
+    }
+
+}
+
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+//Post
 
 // GET /post — todas las publicaciones (home o listado)
 export async function getPosts(req, res) {
     try {
         const posts = await Post.findAll({
-            include: [{
-                model: User,
-                attributes: ['userid', 'fullName', 'avatar']
-            }],
+            include: [
+                {
+                    model: User,
+                    attributes: ['userid', 'fullName', 'avatar']
+                },
+                {
+                    model: Image
+                }
+            ],
             order: [['createdAt', 'DESC']]
         })
-        res.render('post/index', { posts })
+
+        res.render('post', { posts })
     } catch (error) {
         console.error('Error al obtener publicaciones:', error)
         res.status(500).render('error', { msg: 'Error al obtener las publicaciones' })
@@ -28,12 +86,25 @@ export async function getPosts(req, res) {
 export async function getPostById(req, res) {
     const postId = Number(req.params.postId)
     try {
-        const post = await Post.findOne({
-            where: { postid: postId },
-            include: [{
-                model: User,
-                attributes: ['userid', 'fullName', 'avatar']
-            }]
+        const post = await Post.findByPk(postId, {
+            include: [
+                {
+                    model: User,
+                    attributes: ['userid', 'fullName', 'avatar']
+                },
+                {
+                    model: Image
+                },
+                {
+                    model: Comment,
+                    include: [
+                        {
+                            model: User,
+                            attributes: ['userid', 'fullName']
+                        }
+                    ]
+                }
+            ]
         })
         if (!post) {
             return res.status(404).render('post/error', { msg: 'Publicación no encontrada' })
@@ -73,27 +144,39 @@ export async function getPostsByUserId(req, res) {
 // GET /post/crear — mostrar formulario de creación
 export async function getCreatePost(req, res) {
     // Requiere sesión activa
-    if (!req.session.user) {
-        return res.redirect('/login')
-    }
-    res.render('post/create')
+    // if (!req.session.user) {
+    //     return res.redirect('/login')
+    // }
+    res.render('create')
 }
 
 // POST /post/crear — guardar nueva publicación
 export async function createPost(req, res) {
-    if (!req.session.user) {
-        return res.redirect('/login')
-    }
+    // if (!req.session.user) {
+    //     return res.redirect('/login')
+    // }
     try {
-        const { description } = req.body
-        const userId = req.session.user.userid
+        const { description, titulo, imagenBase64, opciones } = req.body
+        //const userId = req.session.user.userid
+        const userId = 1             //cambiar a futuro de momento solo prueba
 
+        //crear el post
         const post = await Post.create({
+            title: titulo,
             description: description || null,
-            UserId: userId       // FK generada automáticamente por Sequelize con User.hasMany(Post)
+            idUser: userId       // FK generada automáticamente por Sequelize con User.hasMany(Post)
         })
 
-        res.redirect(`/post/${post.postid}`)
+        //recibo las imagenes en base 64 del body
+        if (imagenBase64) {
+            await Image.create({
+                image: imagenBase64,
+                copyright: false, //debo cambiar a futuro, de momento solo prueba
+                idPost: post.postid,
+            })
+        }
+
+        res.redirect('/post')
     } catch (error) {
         console.error('Error al crear la publicación:', error)
         res.status(500).render('error', { msg: 'Error al crear la publicación' })

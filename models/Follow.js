@@ -13,11 +13,19 @@ Follow.init(
             type: DataTypes.INTEGER,
             allowNull: false,
         },
+        followerId: {
+            type: DataTypes.INTEGER,
+            allowNull: false,
+        },
+        followingId: {
+            type: DataTypes.INTEGER,
+            allowNull: false,
+        },
     },
     {
         sequelize, 
         modelName: 'Follow',
-        schema: 'follow',
+        tableName: 'follow',
         createdAt: true,
         deletedAt: true,
     },
