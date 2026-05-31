@@ -21,12 +21,10 @@ router.post('/crear', createPost)
 router.get('/usuario/:userId', getPostsByUserId)
 router.get('/:postId', getPostById)
 router.get('/:postId/editar', getEditPost)
-router.post('/:postId/comentar', createComment)
+router.post('/:postId/imagen/:imageId/comentar', createComment)
 router.post('/:postId/editar', updatePost)
 router.post('/:postId/eliminar', deletePost)
 
-// router.get('/:idPost', getPostsById)
-// router.get('/usuario/:idUser', getPostsByUserId)
 
 export default router
 

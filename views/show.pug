@@ -1,18 +1,71 @@
-extends  layout.pug 
+//- extends  layout.pug 
 
-title publicacion
-block content 
-    h4 comentarios 
-        if post.Comments && post.Comments.length
-            each comment in post.Comments
-                span=comment.user.fullname
+//- title publicacion
+//- block content 
+//-     h4 comentarios 
+//-         if post.Comments && post.Comments.length
+//-             each comment in post.Comments
+//-                 span=comment.User.fullName
                 
-                p.mb-0=comment.content 
-        else
-            p no hay comentarios
+//-                 p.mb-0=comment.content 
+//-         else
+//-             p no hay comentarios
 
-        form(action=`/post/${post.postid}/imagen/${img.imageid}/comentar` method="POST")
-            input.form-control(name="content" placeholder="Comentar esta imagen")
-            button.btn.btn-primary(type="submit") Comentar    
+//-     form(
+//-         action=`/post/${post.postid}/comentar`
+//-         method="POST"
+//-     )
+
+//-         textarea.form-control.mb-2(
+//-             name="content"
+//-             rows="2"
+//-             placeholder="Escribí un comentario..."
+//-         )
+
+//-         button.btn.btn-primary(type="submit") Comentar
 
 
+
+extends layout.pug
+
+block content
+  .container.mt-4
+    h2= post.title
+
+    if post.description
+      p= post.description
+
+    if post.Images && post.Images.length
+      each img in post.Images
+        .mb-4
+          img.img-fluid.rounded.mb-3(
+            src=img.image
+            style="max-width:300px"
+          )
+
+          h4 Comentarios
+
+          if img.Comments && img.Comments.length
+            each comment in img.Comments
+              .card.mb-2
+                .card-body
+                  if comment.User
+                    strong= comment.User.fullName
+                  p.mb-0= comment.content
+          else
+            p No hay comentarios
+
+          form(
+            action=`/post/${post.postid}/imagen/${img.imageid}/comentar`
+            method="POST"
+          )
+            textarea.form-control.mb-2(
+              name="content"
+              rows="2"
+              placeholder="Escribí un comentario..."
+            )
+
+            button.btn.btn-primary(type="submit")
+              | Comentar
+    else
+      p Esta publicación no tiene imágenes

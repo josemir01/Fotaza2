@@ -1,8 +1,11 @@
-import { Post } from '../models/Post.js'
-import { getUserById } from './Usercontroller.js'
-import { User } from '../models/User.js'
-import { Image } from '../models/image.js'
+// import { Post } from '../models/Post.js'
+// import { getUserById } from './Usercontroller.js'
+// import { User } from '../models/User.js'
+// import { Image } from '../models/image.js'
+// import { Comment } from '../models/Comment.js'
 
+import { Hashtag } from '../models/Hashtag.js'
+import { User, Post, Image, Comment } from '../models/index.js'
 
 
 //Hashtags
@@ -36,21 +39,23 @@ export async function createComment(req, res) {
     try {
         const { content } = req.body
         const postId = Number(req.params.postId)
+        const imageId = Number(req.params.imageId)
 
         const userId = 1 // temporal
 
         await Comment.create({
             content,
             idUser: userId,
-            idPost: postId
+            idPost: postId,
+            idImage: imageId
         })
 
-        res.redirect('/post')
+        res.redirect(`/post/${postId}`)
+
     } catch (error) {
         console.error('Error al crear un comentario:', error)
         res.status(500).render('error', { msg: 'Error al crear un comentario' })
     }
-
 }
 
 
@@ -69,7 +74,11 @@ export async function getPosts(req, res) {
                     attributes: ['userid', 'fullName', 'avatar']
                 },
                 {
-                    model: Image
+                    model: Image,
+                    as: 'Images',
+                },
+                {
+                    model: Hashtag
                 }
             ],
             order: [['createdAt', 'DESC']]
@@ -93,25 +102,34 @@ export async function getPostById(req, res) {
                     attributes: ['userid', 'fullName', 'avatar']
                 },
                 {
-                    model: Image
-                },
-                {
-                    model: Comment,
+                    model: Image,
+                    as: 'Images',
                     include: [
                         {
-                            model: User,
-                            attributes: ['userid', 'fullName']
+                            model: Comment,
+                            as: 'Comments',
+                            include: [
+                                {
+                                    model: User,
+                                    as: 'User',
+                                    attributes: ['userid', 'fullName']
+                                }
+                            ]
                         }
                     ]
+                },
+                {
+                    model: Hashtag,
+                    through: { attributes: [] }
                 }
             ]
         })
         if (!post) {
             return res.status(404).render('post/error', { msg: 'Publicación no encontrada' })
         }
-        res.render('post/detail', { post })
+        res.render('show', { post })
     } catch (error) {
-        console.error('Error al obtener la publicación:', error)
+        console.error('ERROR COMPLETO:', error)
         res.status(500).render('error', { msg: 'Error interno al obtener la publicación' })
     }
 }
@@ -122,7 +140,7 @@ export async function getPostsByUserId(req, res) {
     try {
         // Verificar que el usuario exista
         const user = await User.findOne({
-            where: { userid: userId },
+            where: { idUser: userId },
             attributes: { exclude: ['password'] }
         })
         if (!user) {
@@ -143,11 +161,18 @@ export async function getPostsByUserId(req, res) {
 
 // GET /post/crear — mostrar formulario de creación
 export async function getCreatePost(req, res) {
-    // Requiere sesión activa
-    // if (!req.session.user) {
-    //     return res.redirect('/login')
-    // }
-    res.render('create')
+    try {
+        // Requiere sesión activa
+        // if (!req.session.user) {
+        //     return res.redirect('/login')
+        // }
+        const allTags = await fetchAllHashtags()
+        res.render('create', { allTags })
+
+    } catch (error) {
+        console.error('Error al cargar formulario:', error)
+        res.status(500).render('error', { msg: 'Error al cargar formulario' })
+    }
 }
 
 // POST /post/crear — guardar nueva publicación
@@ -175,7 +200,10 @@ export async function createPost(req, res) {
                 idPost: post.postid,
             })
         }
-
+        
+        if (opciones) {
+            await post.addHashtags(opciones)
+        }
         res.redirect('/post')
     } catch (error) {
         console.error('Error al crear la publicación:', error)
