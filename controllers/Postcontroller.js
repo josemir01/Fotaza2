@@ -10,22 +10,64 @@ import { User, Post, Image, Comment } from '../models/index.js'
 
 //Hashtags
 async function fetchAllHashtags() {
-    return await Hashtag.findAll({ order: [['name', 'ASC']] })
+    return await Hashtag.findAll({
+        order: [['name', 'ASC']]
+    })
 }
 
 // GET /post/hashtag/:hashtagId
-export async function getPostsByHashtag(req, res) {
-    const hashtagId = Number(req.params.hashtagId)
+export async function searchPostsByHashtag(req, res) {
+    const hashtagId = Number(req.query.hashtagId)
+
+    if (!hashtagId) {
+        return res.redirect('/post')
+    }
     try {
         const tag = await Hashtag.findByPk(hashtagId, {
             include: [{
                 model: Post,
                 through: { attributes: [] },
-                include: [{ model: User, attributes: ['userid', 'fullName', 'avatar'] }]
+                include: [
+                    {
+                        model: User,
+                        attributes: ['userid', 'fullName', 'avatar']
+                    },
+                    {
+                        model: Image,
+                        as: 'Images'
+                    },
+                    {
+                        model: Hashtag
+                    }
+                ]
             }]
         })
-        if (!tag) return res.status(404).render('error', { msg: 'Hashtag no encontrado' })
-        res.render('post/byHashtag', { tag, posts: tag.Posts })
+
+        const allTags = await fetchAllHashtags()
+
+        //si no existe el tag
+        if (!tag) {
+            return res.render('post', {
+                posts: [],
+                allTags,
+                msg: 'Hashtag no encontrado'
+            })
+        }
+
+        //si existe pero no tiene publicaciones
+        if (!tag || !tag.Posts || tag.Posts.length === 0) {
+            return res.render('post', {
+                posts: [],
+                allTags,
+                msg: 'No se encontraron publicaciones'
+            })
+        }
+
+        //si existe la publicacion
+        res.render('post', {
+            posts: tag.Posts,
+            allTags: await fetchAllHashtags()
+        })
     } catch (error) {
         console.error('Error al obtener publicaciones por hashtag:', error)
         res.status(500).render('error', { msg: 'Error al obtener las publicaciones con ese tag' })
@@ -84,7 +126,9 @@ export async function getPosts(req, res) {
             order: [['createdAt', 'DESC']]
         })
 
-        res.render('post', { posts })
+        const allTags = await fetchAllHashtags()
+        console.log(allTags)
+        res.render('post', { posts, allTags })
     } catch (error) {
         console.error('Error al obtener publicaciones:', error)
         res.status(500).render('error', { msg: 'Error al obtener las publicaciones' })
@@ -181,15 +225,15 @@ export async function createPost(req, res) {
     //     return res.redirect('/login')
     // }
     try {
-        const { description, titulo, imagenBase64, opciones } = req.body
+        const { descripcion, titulo, imagenBase64, opciones } = req.body
         //const userId = req.session.user.userid
         const userId = 1             //cambiar a futuro de momento solo prueba
 
         //crear el post
         const post = await Post.create({
             title: titulo,
-            description: description || null,
-            idUser: userId       // FK generada automáticamente por Sequelize con User.hasMany(Post)
+            description: descripcion || null,
+            idUser: userId       // FK 
         })
 
         //recibo las imagenes en base 64 del body
@@ -200,7 +244,7 @@ export async function createPost(req, res) {
                 idPost: post.postid,
             })
         }
-        
+
         if (opciones) {
             await post.addHashtags(opciones)
         }

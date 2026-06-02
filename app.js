@@ -15,8 +15,8 @@ app.set('view engine', 'pug')
 app.set('views', './views')
 
 //middlewares
-app.use(express.json())
-app.use(express.urlencoded({ extended: true }))
+app.use(express.json({limit:'10mb'}))
+app.use(express.urlencoded({ extended: true,limit:'10mb' }))
 app.use(express.static('public'))
 
 //sesion
