@@ -10,21 +10,17 @@ Rating.init(
             autoIncrement: true,
             primaryKey:true,
         },
-        description:{
-            type: DataTypes.STRING,
-            allowNull: true,
-        },
         value:{
-            type: DataTypes.INTEGER,
+            type: DataTypes.DOUBLE,
             allowNull:false,
         },
         idUser: {
             type: DataTypes.INTEGER,
-            allowNull: true,
+            allowNull: false,
         },
         idPost: {
             type: DataTypes.INTEGER,
-            allowNull: true,
+            allowNull: false,
         },
     },
     {
@@ -32,7 +28,7 @@ Rating.init(
         sequelize, 
         modelName: 'Rating',
         tableName: 'rating',
-        createdAt: true,
-        deletedAt: true,
+        timestamps: true,
+        paranoid: true
     },
 );

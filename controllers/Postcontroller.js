@@ -3,7 +3,7 @@
 // import { User } from '../models/User.js'
 // import { Image } from '../models/image.js'
 // import { Comment } from '../models/Comment.js'
-
+import { Rating } from '../models/rating.js'
 import { Hashtag } from '../models/Hashtag.js'
 import { User, Post, Image, Comment } from '../models/index.js'
 
@@ -100,6 +100,52 @@ export async function createComment(req, res) {
     }
 }
 
+////////////////////////////////////////////////////////////////////////////////
+
+//Rating
+
+export async function ratePost(req, res) {
+    const postId = Number(req.params.postId)
+    const value = Number(req.body.value)
+    const userId = 1  //de momento fijo, luego cambiar cuando tenga sesiones
+    try {
+
+        //control para que no pueda valorar fuera de rango
+        if (!value || value < 1 || value > 5) {
+            res.redirect(`/post/${postId}`)
+        }
+
+        //busco si el usuario ya valoro la publicacion
+        const ratingExistente = await Rating.findOne({
+            where: {
+                idUser: userId,
+                idPost: postId
+            }
+        })
+
+        // si el usuario valoro la publicacion actualizo
+        if (ratingExistente) {
+            await ratingExistente.update({
+                value
+            })
+        } else {
+            // si no hay lo creo
+            const rating = await Rating.create({
+                value,
+                idUser: userId,
+                idPost: postId
+            })
+        }
+
+
+
+        res.redirect(`/post/${postId}`)
+    } catch (error) {
+        console.error('Error al valorar la publicacion:', error)
+        res.status(500).render('error', { msg: 'Error al valorar la publicacion' })
+    }
+
+}
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -165,13 +211,32 @@ export async function getPostById(req, res) {
                 {
                     model: Hashtag,
                     through: { attributes: [] }
+                },
+                {
+                    model: Rating
                 }
             ]
         })
         if (!post) {
             return res.status(404).render('post/error', { msg: 'Publicación no encontrada' })
         }
-        res.render('show', { post })
+
+        //sacar el promedio de valoraciones
+        //obtiene todas las valoraciones
+        const ratings = post.Ratings || []
+        let promedioRating = 0
+
+        if (ratings.length > 0) {
+            let suma = 0
+            for (const rating of ratings) {
+                suma = suma + rating.value
+            }
+            promedioRating = (suma / ratings.length).toFixed(1)
+        } else {
+            promedioRating = 0
+        }
+
+        res.render('show', { post, promedioRating })
     } catch (error) {
         console.error('ERROR COMPLETO:', error)
         res.status(500).render('error', { msg: 'Error interno al obtener la publicación' })
