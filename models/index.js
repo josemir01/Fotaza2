@@ -23,13 +23,15 @@ Comment.belongsTo(User, { foreignKey: 'idUser' })
 User.belongsToMany(User, {
     through: Follow,
     as: 'Followers',
-    foreignKey: 'followingId'
+    foreignKey: 'followerId',
+    otherKey:'followingId'
 })
 
 User.belongsToMany(User, {
     through: Follow,
     as: 'Following',
-    foreignKey: 'followerId'
+    foreignKey: 'followingId',
+    otherKey:'followerId'
 })
 
 //un usuario tiene muchos likes( me interesa) (1:n)

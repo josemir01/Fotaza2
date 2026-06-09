@@ -6,6 +6,7 @@
 import { Rating } from '../models/rating.js'
 import { Hashtag } from '../models/Hashtag.js'
 import { User, Post, Image, Comment } from '../models/index.js'
+import { Op } from 'sequelize'
 
 
 //Hashtags
@@ -387,5 +388,56 @@ export async function deletePost(req, res) {
     } catch (error) {
         console.error('Error al eliminar la publicación:', error)
         res.status(500).render('error', { msg: 'Error al eliminar la publicación' })
+    }
+}
+
+
+export async function searchPosts(req, res) {
+    const termino = req.query.termino
+    try {
+        const posts = await Post.findAll({
+            include: [
+                {
+                    model: User,
+                    attributes: ['userid', 'fullName', 'avatar']
+                },
+                {
+                    model: Image,
+                    as: 'Images'
+                },
+                {
+                    model: Hashtag
+                }
+            ],
+            where: {
+                [Op.or]: [
+                    {
+                        title: {
+                            [Op.iLike]: `%${termino}%`
+                        }
+                    },
+                    {
+                        description: {
+                            [Op.iLike]: `%${termino}%`
+                        }
+                    }
+                ]
+            },
+            order: [['createdAt', 'DESC']]
+        })
+
+        const allTags = await fetchAllHashtags()
+
+        res.render('post', {
+            posts,
+            allTags,
+            msg: posts.length ? null : 'No se encontraron publicaciones'
+        })
+
+    } catch (error) {
+        console.error(error)
+        res.status(500).render('error', {
+            msg: 'Error al buscar publicaciones'
+        })
     }
 }

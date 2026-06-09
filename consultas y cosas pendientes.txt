@@ -165,3 +165,7 @@ idPost: {
 ver sabado 30/5/2026
 
 continuar con comentarios
+
+
+
+rol no debe ser parte del usuario deberia ser una tabla(modelo) separado

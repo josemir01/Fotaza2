@@ -22,3 +22,13 @@ block content
       each tag in allTags
         option(value=tag.hashtagid)= tag.name
     button.btn.btn-primary.mt-2(type="submit") Buscar
+
+        h2 Buscar publicaciones
+    // Busqueda por texto
+    form(action="/post/buscar-texto" method="GET" class="mb-4")
+        input.form-control(
+            type="text"
+            name="termino"
+            placeholder="Buscar por título o descripción..."
+        )
+        button.btn.btn-primary.mt-2(type="submit") Buscar

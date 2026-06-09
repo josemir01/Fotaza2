@@ -26,6 +26,18 @@ app.use(session({
   saveUninitialized: false
 }))
 
+//dejar para luego cuando tenga que implementar el login 
+
+// app.use((req, res, next) => {
+//     res.locals.user = req.session.user || null
+//     next()
+// })
+
+app.get('/profile', (req, res) => {
+    const userId = 1
+    res.redirect(`/usuario/${userId}`)
+})
+
 //Rutas
 app.use('/usuario',UserRoute)
 app.use('/post',PostRoute)

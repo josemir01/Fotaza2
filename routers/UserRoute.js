@@ -5,16 +5,16 @@ import {
     createUser,
     getUserById,
     updateUser,
+    followUser,
 } from '../controllers/Usercontroller.js'
 
 const router = Router()
 
-router.get('/', getUsers)                          // GET  /usuario
-router.get('/:userId', getUserById)                // GET  /usuario/5
-router.get('/:userId/editar', updateUser)         // GET  /usuario/5/editar
-router.post('/registro', createUser)               // POST /usuario/registro
-//router.post('/:userId/editar', updateUser)         // POST /usuario/5/editar
+router.get('/', getUsers)                          
+router.get('/:userId', getUserById)                
+router.post('/:userId/seguir', followUser)
+router.get('/:userId/editar', updateUser)         
+router.post('/registro', createUser)              
 
-//router.post('/:userId', getUserById)
 
 export default router

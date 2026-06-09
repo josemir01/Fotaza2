@@ -1,7 +1,9 @@
+import { Model } from 'sequelize'
 import { User } from '../models/User.js'
+import { Follow } from '../models/Follow.js'
 import bcrypt from 'bcrypt'
 
-const SALT_ROUNDS = 10
+
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -26,12 +28,31 @@ export async function getUserById(req, res) {
     try {
         const user = await User.findOne({
             where: { userid: userId },
-            attributes: { exclude: ['password'] }
+            attributes: { exclude: ['password', 'email'] },
+            include: [
+                {
+                    model: User,
+                    as: 'Followers',
+                    attributes: ['userid', 'fullName', 'avatar'],
+                    through: { attributes: [] }
+                },
+                {
+                    model: User,
+                    as: 'Following',
+                    attributes: ['userid', 'fullName', 'avatar'],
+                    through: { attributes: [] }
+                }
+            ]
         })
         if (!user) {
             return res.status(404).render('user/error', { msg: 'Usuario no encontrado' })
         }
-        res.render('user/profile', { user })
+        res.render('profile', {
+            user,
+            followers: user.Followers || [],
+            following: user.Following || []
+
+        })
     } catch (error) {
         console.error('Error al obtener el usuario:', error)
         res.status(500).render('error', { msg: 'Error interno al obtener el usuario' })
@@ -45,7 +66,7 @@ export async function createUser(req, res) {
 
         // Validaciones básicas
         if (!fullName || !email || !password) {
-            return res.status(400).render('user/register', {
+            return res.status(400).render('user', {
                 error: 'Nombre, email y contraseña son obligatorios'
             })
         }
@@ -59,7 +80,7 @@ export async function createUser(req, res) {
         }
 
         // Hashear la contraseña antes de guardar
-        const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS)
+        const hashedPassword = await bcrypt.hash(password, 10)
 
         const user = await User.create({
             fullName,
@@ -162,5 +183,38 @@ export async function updateUser(req, res) {
     } catch (error) {
         console.error('Error al actualizar el usuario:', error)
         res.status(500).render('error', { msg: 'Error al actualizar el usuario' })
+    }
+}
+
+
+export async function followUser(req, res) {
+    const followingId = Number(req.params.userId)
+    // temporal mientras no haya login
+    const followerId = 1
+    try {
+        // evitar seguirse a sí mismo
+        // if (followingId === followerId) {
+        //     return res.redirect('/post')
+        // }
+
+        // verificar si ya lo sigue
+        const existingFollow = await Follow.findOne({
+            where: {
+                followerId,
+                followingId
+            }
+        })
+
+        // si no existe crear follow
+        if (!existingFollow) {
+            await Follow.create({
+                followerId,
+                followingId
+            })
+        }
+        res.redirect('/post')
+    } catch (error) {
+        console.error('Error al seguir al usuario:', error)
+        res.status(500).render('error', { msg: 'Error al seguir al usuario' })
     }
 }

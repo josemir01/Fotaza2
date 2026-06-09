@@ -1,0 +1,46 @@
+extends layout.pug
+
+block content
+    .container.mt-4
+
+        h2= user.fullName
+
+        if user.avatar
+            img.img-fluid.rounded-circle.mb-3(
+                src=user.avatar
+                style="max-width:120px"
+            )
+
+        hr
+
+        h4 Seguidores: #{followers.length}
+
+        if followers.length
+            each follower in followers
+                .card.mb-2
+                    .card-body
+                        if follower.avatar
+                            img.rounded-circle.me-2(
+                                src=follower.avatar
+                                style="width:40px;height:40px"
+                            )
+                        a(href=`/usuario/${follower.userid}`)= follower.fullName
+        else
+            p Este usuario todavía no tiene seguidores.
+
+        hr
+
+        h4 Siguiendo: #{following.length}
+
+        if following.length
+            each followed in following
+                .card.mb-2
+                    .card-body
+                        if followed.avatar
+                            img.rounded-circle.me-2(
+                                src=followed.avatar
+                                style="width:40px;height:40px"
+                            )
+                        a(href=`/usuario/${followed.userid}`)= followed.fullName
+        else
+            p Este usuario todavía no sigue a nadie.

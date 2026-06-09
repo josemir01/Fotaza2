@@ -1,124 +1,58 @@
-//- extends layout.pug
-
-
-//- block content
-//-   .container.mt-4
-//-     h2 Publicaciones
-
-      
-//-       form(action="/post/buscar" method='GET')
-//-           select.form-select(name="hashtagId")
-//-             option(value="") --buscar por hashtag--
-
-//-           if allTags && allTags.length  
-//-             each tag in allTags
-//-               option(value=tag.hashtagId)=tag.name    
-//-           else
-//-             option(disabled) no hay hashtags
-
-
-//-         button.btn.btn.primary.mt-2(type="submit") buscar 
-
-//-     if msg 
-//-       .alert.alert-warning.mt-3
-//-         =msg 
-
-//-     if posts && posts.length
-//-       each post in posts
-//-         .card.mb-3
-//-           .card-body
-
-//-             h5= post.title
-//-             p= post.description
-
-//-             if post.Images && post.Images.length
-//-               each img in post.Images
-//-                 img.img-fluid.rounded(
-//-                   src=img.image,
-//-                   style="max-width:300px"
-//-                 )
-//-             if post.Hashtags && post.Hashtags.length
-//-               .mt-2 
-//-               each tag in post.Hashtags
-//-                 span.badge.bg-primary.me-2 #{tag.name} 
-//-           .mt-1 
-//-             a.btn.btn-primary.mt-2(
-//-               href=`/post/${post.postid}`
-//-             ) Ver publicación
-
-//-     else
-//-       p No hay publicaciones todavía
-
 
 
 extends layout.pug
 
 block content
+
     .container.mt-4
-
         h2 Publicaciones
-
         form(action="/post/buscar" method="GET")
-
             select.form-select(name="hashtagId")
-
                 option(value="") --buscar por hashtag--
-
                 if allTags && allTags.length
-
                     each tag in allTags
-
                         option(value=tag.hashtagid)= tag.name
-
                 else
-
                     option(disabled) no hay hashtags
-
             button.btn.btn-primary.mt-2(type="submit")
                 | buscar
-
         if msg
-
             .alert.alert-warning.mt-3
-                =msg
-
+                = msg
         if posts && posts.length
-
             each post in posts
-
                 .card.mb-3
-
                     .card-body
-
+                        .d-flex.align-items-center.justify-content-between.mb-2
+                            div
+                                strong Publicado por:
+                                a.ms-1(
+                                    href=`/usuario/${post.User.userid}`
+                                )
+                                    = post.User.fullName
+                            form(
+                                action=`/usuario/${post.User.userid}/seguir`
+                                method="POST"
+                            )
+                                button.btn.btn-sm.btn-primary(type="submit")
+                                    | Seguir
                         h5= post.title
-
                         p= post.description
-
                         if post.Images && post.Images.length
-
                             each img in post.Images
-
                                 img.img-fluid.rounded(
                                     src=img.image,
                                     style="max-width:300px"
                                 )
-
                         if post.Hashtags && post.Hashtags.length
-
                             .mt-2
-
                                 each tag in post.Hashtags
-
                                     span.badge.bg-primary.me-2
                                         | #{tag.name}
-
                         .mt-1
-
                             a.btn.btn-primary.mt-2(
                                 href=`/post/${post.postid}`
                             )
                                 | Ver publicación
-
         else
-
             p No hay publicaciones todavía

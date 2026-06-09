@@ -5,14 +5,6 @@ export class Follow extends Model {}
 
 Follow.init(
     {
-        followerid:{
-            type: DataTypes.INTEGER,
-            allowNull:false,
-        },
-        followeid:{
-            type: DataTypes.INTEGER,
-            allowNull: false,
-        },
         followerId: {
             type: DataTypes.INTEGER,
             allowNull: false,
