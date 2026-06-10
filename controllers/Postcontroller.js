@@ -3,7 +3,7 @@
 // import { User } from '../models/User.js'
 // import { Image } from '../models/image.js'
 // import { Comment } from '../models/Comment.js'
-import { Rating } from '../models/rating.js'
+import { Rating } from '../models/Rating.js'
 import { Hashtag } from '../models/Hashtag.js'
 import { User, Post, Image, Comment } from '../models/index.js'
 import { Op } from 'sequelize'
