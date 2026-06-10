@@ -3,7 +3,7 @@ import { Comment } from './Comment.js'
 import { Post } from "./Post.js"
 import { Follow } from "./Follow.js"
 import { Like } from "./Like.js"
-import { Rating } from "./rating.js"
+import { Rating } from "./Rating.js"
 import { Image } from "./Image.js"
 import { Report } from "./Report.js"
 import { Hashtag } from "./Hashtag.js"
