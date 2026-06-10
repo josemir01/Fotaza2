@@ -51,13 +51,13 @@ export async function getUserById(req, res) {
             user,
             followers: user.Followers || [],
             following: user.Following || []
-
         })
     } catch (error) {
         console.error('Error al obtener el usuario:', error)
         res.status(500).render('error', { msg: 'Error interno al obtener el usuario' })
     }
 }
+
 
 // POST /usuario/registro — crear nuevo usuario (registro)
 export async function createUser(req, res) {
@@ -97,50 +97,7 @@ export async function createUser(req, res) {
     }
 }
 
-// POST /login — autenticar usuario con sesión
-export async function loginUser(req, res) {
-    try {
-        const { email, password } = req.body
 
-        if (!email || !password) {
-            return res.status(400).render('login', { error: 'Email y contraseña son obligatorios' })
-        }
-
-        const user = await User.findOne({ where: { email } })
-        if (!user) {
-            return res.status(401).render('login', { error: 'Credenciales incorrectas' })
-        }
-
-        const passwordMatch = await bcrypt.compare(password, user.password)
-        if (!passwordMatch) {
-            return res.status(401).render('login', { error: 'Credenciales incorrectas' })
-        }
-
-        // Guardar usuario en sesión (sin contraseña)
-        req.session.user = {
-            userid: user.userid,
-            fullName: user.fullName,
-            email: user.email,
-            avatar: user.avatar
-        }
-
-        res.redirect('/')
-    } catch (error) {
-        console.error('Error en login:', error)
-        res.status(500).render('error', { msg: 'Error al iniciar sesión' })
-    }
-}
-
-// POST /logout — cerrar sesión
-export async function logoutUser(req, res) {
-    req.session.destroy((err) => {
-        if (err) {
-            console.error('Error al cerrar sesión:', err)
-            return res.status(500).render('error', { msg: 'Error al cerrar sesión' })
-        }
-        res.redirect('/login')
-    })
-}
 
 // GET /usuario/:userId/editar — mostrar formulario de edición
 export async function getEditUser(req, res) {
@@ -188,14 +145,16 @@ export async function updateUser(req, res) {
 
 
 export async function followUser(req, res) {
+    const followerId = req.session.user.userid
     const followingId = Number(req.params.userId)
-    // temporal mientras no haya login
-    const followerId = 1
     try {
-        // evitar seguirse a sí mismo
-        // if (followingId === followerId) {
-        //     return res.redirect('/post')
-        // }
+        if (!req.session.user) {
+            return res.redirect('/login')
+        }
+        //evitar seguirse a sí mismo
+        if (followingId === followerId) {
+            return res.redirect('/post')
+        }
 
         // verificar si ya lo sigue
         const existingFollow = await Follow.findOne({

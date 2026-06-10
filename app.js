@@ -3,6 +3,7 @@ import 'dotenv/config'
 import sequelize from './db/config.js';
 import UserRoute from './routers/UserRoute.js';
 import PostRoute from './routers/PostRoute.js';
+import AuthRoute from './routers/AuthRoute.js'
 import './models/index.js'
 import { connectDatabase } from './models/index.js'
 import session from 'express-session'
@@ -15,61 +16,41 @@ app.set('view engine', 'pug')
 app.set('views', './views')
 
 //middlewares
-app.use(express.json({limit:'10mb'}))
-app.use(express.urlencoded({ extended: true,limit:'10mb' }))
+app.use(express.json({ limit: '10mb' }))
+app.use(express.urlencoded({ extended: true, limit: '10mb' }))
 app.use(express.static('public'))
 
 //sesion
 app.use(session({
-  secret: 'mi_secreto',
-  resave: false,
-  saveUninitialized: false
+    secret: 'Session_key',
+    resave: false,
+    saveUninitialized: false
 }))
 
-//dejar para luego cuando tenga que implementar el login 
-
-// app.use((req, res, next) => {
-//     res.locals.user = req.session.user || null
-//     next()
-// })
+app.use((req, res, next) => {
+    res.locals.user = req.session.user || null
+    next()
+})
 
 app.get('/profile', (req, res) => {
-    const userId = 1
-    res.redirect(`/usuario/${userId}`)
+    if (!req.session.user) {
+        return res.redirect('/login')
+    }
+    res.redirect(`/usuario/${req.session.user.userid}`)
 })
 
 //Rutas
-app.use('/usuario',UserRoute)
-app.use('/post',PostRoute)
+app.use('/', AuthRoute)
+app.use('/usuario', UserRoute)
+app.use('/post', PostRoute)
 
 //pagina de inicio
 app.get("/", (req, res) => {
     res.render("home")
 })
 app.get('/login', (req, res) => {
-  res.render('login')
+    res.render('login')
 })
-// app.get("/login", (req, res) => {
-//     res.render("login")
-// })
-
-// app.get("/buscar",(req,res)=>{
-//     res.render()
-//     const busqueda=req.query.termino
-// })
-
-// app.post("/crear-post",(req,res)=>{
-//     //logica al recibir los datos de la publicacion
-
-// })
-
-// app.get("/login",(req,res)=>{
-//     res.render("login")
-// })
-// //ruta para recibir los datos del formulario
-// app.post("/login",(req,res)=>{
-//     //logica al recibir los datos del formulario
-// })
 
 
 // CONEXION A BD

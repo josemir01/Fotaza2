@@ -84,7 +84,7 @@ export async function createComment(req, res) {
         const postId = Number(req.params.postId)
         const imageId = Number(req.params.imageId)
 
-        const userId = 1 // temporal
+        const userId = req.session.user.userid // temporal
 
         await Comment.create({
             content,
@@ -108,7 +108,7 @@ export async function createComment(req, res) {
 export async function ratePost(req, res) {
     const postId = Number(req.params.postId)
     const value = Number(req.body.value)
-    const userId = 1  //de momento fijo, luego cambiar cuando tenga sesiones
+    const userId = req.session.user.userid  //de momento fijo, luego cambiar cuando tenga sesiones
     try {
 
         //control para que no pueda valorar fuera de rango
@@ -293,7 +293,7 @@ export async function createPost(req, res) {
     try {
         const { descripcion, titulo, imagenBase64, opciones } = req.body
         //const userId = req.session.user.userid
-        const userId = 1             //cambiar a futuro de momento solo prueba
+        const userId = req.session.user.userid             //cambiar a futuro de momento solo prueba
 
         //crear el post
         const post = await Post.create({
@@ -304,13 +304,16 @@ export async function createPost(req, res) {
 
         //recibo las imagenes en base 64 del body
         if (imagenBase64) {
-            await Image.create({
-                image: imagenBase64,
-                copyright: false, //debo cambiar a futuro, de momento solo prueba
-                idPost: post.postid,
-            })
-        }
+            const imagenesArray = JSON.parse(imagenBase64)
 
+            for (const imgBase64 of imagenesArray) {
+                await Image.create({
+                    image: imgBase64,
+                    copyright: false,
+                    idPost: post.postid
+                })
+            }
+        }
         if (opciones) {
             await post.addHashtags(opciones)
         }

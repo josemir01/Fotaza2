@@ -1,21 +1,39 @@
-console.log('JS imagenBase64 cargado')
 const input = document.getElementById('imagenes')
 const hidden = document.getElementById('imagenBase64')
 const preview = document.getElementById('preview')
 
-input.addEventListener('change', () => {
-  const file = input.files[0]
+input.addEventListener('change', async () => {
+    const files = Array.from(input.files)
 
-  if (!file) return
+    const imagenesBase64 = await Promise.all(
+        files.map(file => convertirABase64(file))
+    )
 
-  const reader = new FileReader()
+    hidden.value = JSON.stringify(imagenesBase64)
 
-  reader.onload = () => {
-    const base64 = reader.result
+    preview.innerHTML = ''
 
-    hidden.value = base64
-    preview.src = base64
-  }
-
-  reader.readAsDataURL(file)
+imagenesBase64.forEach(base64 => {
+    const img = document.createElement('img')
+    img.src = base64
+    img.style.width = '150px'
+    img.style.height = '150px'
+    img.style.objectFit = 'cover'
+    img.classList.add('rounded', 'border')
+    preview.appendChild(img)
 })
+})
+
+function convertirABase64(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader()
+
+        reader.onload = () => {
+            resolve(reader.result)
+        }
+
+        reader.onerror = reject
+
+        reader.readAsDataURL(file)
+    })
+}

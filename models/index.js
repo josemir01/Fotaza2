@@ -9,6 +9,7 @@ import { Report } from "./Report.js"
 import { Hashtag } from "./Hashtag.js"
 import { Collection } from "./Collection.js"
 import sequelize from "../db/config.js"
+import { seed } from "../Seeders/seed.js"
 
 //un usuario tiene muchas publicaciones (1:n)
 User.hasMany(Post, { foreignKey: 'idUser' })
@@ -24,14 +25,14 @@ User.belongsToMany(User, {
     through: Follow,
     as: 'Followers',
     foreignKey: 'followerId',
-    otherKey:'followingId'
+    otherKey: 'followingId'
 })
 
 User.belongsToMany(User, {
     through: Follow,
     as: 'Following',
     foreignKey: 'followingId',
-    otherKey:'followerId'
+    otherKey: 'followerId'
 })
 
 //un usuario tiene muchos likes( me interesa) (1:n)

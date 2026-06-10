@@ -27,8 +27,12 @@ html(lang="es")
             button.btn.btn-outline-light(type="submit") Buscar
           a.text-white.text-decoration-none(href="/post") Publicaciones
           a.text-white.text-decoration-none(href="/post/crear") Crear Publicaciones    
-          a.text-white.text-decoration-none(href="/profile") Perfil
-          a.text-white.text-decoration-none(href="/login") Iniciar sesion
+          
+          if user
+              a.text-white.text-decoration-none(href="/profile") Perfil
+              a.text-white.text-decoration-none(href="/logout") Cerrar sesion
+          else
+              a.text-white.text-decoration-none(href="/login") Iniciar sesion
           a.text-white.text-decoration-none(href="/notificaciones")
             i.bi.bi-bell
 

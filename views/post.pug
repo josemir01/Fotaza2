@@ -1,5 +1,4 @@
 
-
 extends layout.pug
 
 block content
@@ -39,11 +38,27 @@ block content
                         h5= post.title
                         p= post.description
                         if post.Images && post.Images.length
-                            each img in post.Images
-                                img.img-fluid.rounded(
-                                    src=img.image,
-                                    style="max-width:300px"
-                                )
+                            .carousel.slide(id=`carouselPost${post.postid}`)
+                                .carousel-inner
+                                    each img, index in post.Images
+                                        .carousel-item(class=index === 0 ? 'active' : '')
+                                            img.d-block.w-100.rounded(
+                                                src=img.image,
+                                                style="height:400px; object-fit:contain; background:#000;"
+                                            )
+                                if post.Images.length > 1
+                                    button.carousel-control-prev(
+                                        type="button"
+                                        data-bs-target=`#carouselPost${post.postid}`
+                                        data-bs-slide="prev"
+                                    )
+                                        span.carousel-control-prev-icon
+                                    button.carousel-control-next(
+                                        type="button"
+                                        data-bs-target=`#carouselPost${post.postid}`
+                                        data-bs-slide="next"
+                                    )
+                                        span.carousel-control-next-icon
                         if post.Hashtags && post.Hashtags.length
                             .mt-2
                                 each tag in post.Hashtags
