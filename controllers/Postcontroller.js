@@ -106,6 +106,10 @@ export async function createComment(req, res) {
 //Rating
 
 export async function rateImage(req, res) {
+
+    if (!req.session.user) {
+        return res.redirect('/login')
+    }
     const postId = Number(req.params.postId)
     const value = Number(req.body.value)
     const imageId = Number(req.params.imageId)
@@ -225,7 +229,7 @@ export async function getPostById(req, res) {
 
         //sacar el promedio de valoraciones
         //obtiene todas las valoraciones
-        for (const img of post.Images||[]) {
+        for (const img of post.Images || []) {
             const ratings = img.Ratings || []
             let promedioRating = 0
             if (ratings.length > 0) {
@@ -238,7 +242,7 @@ export async function getPostById(req, res) {
             img.promedioRating = promedioRating
         }
 
-        res.render('show', { post})
+        res.render('show', { post })
     } catch (error) {
         console.error('ERROR COMPLETO:', error)
         res.status(500).render('error', { msg: 'Error interno al obtener la publicación' })
@@ -273,10 +277,10 @@ export async function getPostsByUserId(req, res) {
 // GET /post/crear — mostrar formulario de creación
 export async function getCreatePost(req, res) {
     try {
-        // Requiere sesión activa
-        // if (!req.session.user) {
-        //     return res.redirect('/login')
-        // }
+        //Requiere sesión activa
+        if (!req.session.user) {
+            return res.redirect('/login')
+        }
         const allTags = await fetchAllHashtags()
         res.render('create', { allTags })
 
@@ -288,9 +292,9 @@ export async function getCreatePost(req, res) {
 
 // POST /post/crear — guardar nueva publicación
 export async function createPost(req, res) {
-    // if (!req.session.user) {
-    //     return res.redirect('/login')
-    // }
+    if (!req.session.user) {
+        return res.redirect('/login')
+    }
     try {
         const { descripcion, titulo, imagenBase64, opciones } = req.body
         //const userId = req.session.user.userid
