@@ -105,10 +105,11 @@ export async function createComment(req, res) {
 
 //Rating
 
-export async function ratePost(req, res) {
+export async function rateImage(req, res) {
     const postId = Number(req.params.postId)
     const value = Number(req.body.value)
-    const userId = req.session.user.userid  //de momento fijo, luego cambiar cuando tenga sesiones
+    const imageId = Number(req.params.imageId)
+    const userId = req.session.user.userid
     try {
 
         //control para que no pueda valorar fuera de rango
@@ -120,7 +121,7 @@ export async function ratePost(req, res) {
         const ratingExistente = await Rating.findOne({
             where: {
                 idUser: userId,
-                idPost: postId
+                idImage: imageId
             }
         })
 
@@ -131,13 +132,12 @@ export async function ratePost(req, res) {
             })
         } else {
             // si no hay lo creo
-            const rating = await Rating.create({
+            await Rating.create({
                 value,
                 idUser: userId,
                 idPost: postId
             })
         }
-
 
 
         res.redirect(`/post/${postId}`)
@@ -206,6 +206,9 @@ export async function getPostById(req, res) {
                                     attributes: ['userid', 'fullName']
                                 }
                             ]
+                        },
+                        {
+                            model: Rating
                         }
                     ]
                 },
@@ -213,9 +216,7 @@ export async function getPostById(req, res) {
                     model: Hashtag,
                     through: { attributes: [] }
                 },
-                {
-                    model: Rating
-                }
+
             ]
         })
         if (!post) {
@@ -224,20 +225,20 @@ export async function getPostById(req, res) {
 
         //sacar el promedio de valoraciones
         //obtiene todas las valoraciones
-        const ratings = post.Ratings || []
-        let promedioRating = 0
-
-        if (ratings.length > 0) {
-            let suma = 0
-            for (const rating of ratings) {
-                suma = suma + rating.value
+        for (const img of post.Images||[]) {
+            const ratings = img.Ratings || []
+            let promedioRating = 0
+            if (ratings.length > 0) {
+                let suma = 0
+                for (const rating of ratings) {
+                    suma = suma + rating.value
+                }
+                promedioRating = (suma / ratings.length).toFixed(1)
             }
-            promedioRating = (suma / ratings.length).toFixed(1)
-        } else {
-            promedioRating = 0
+            img.promedioRating = promedioRating
         }
 
-        res.render('show', { post, promedioRating })
+        res.render('show', { post})
     } catch (error) {
         console.error('ERROR COMPLETO:', error)
         res.status(500).render('error', { msg: 'Error interno al obtener la publicación' })

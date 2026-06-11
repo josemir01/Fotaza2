@@ -1,31 +1,31 @@
 import { DataTypes, Model } from "sequelize";
 import sequelize from "../db/config.js";
 
-export class Rating extends Model {}
+export class Rating extends Model { }
 
 Rating.init(
     {
-        ratingid:{
+        ratingid: {
             type: DataTypes.INTEGER,
             autoIncrement: true,
-            primaryKey:true,
+            primaryKey: true,
         },
-        value:{
+        value: {
             type: DataTypes.DOUBLE,
-            allowNull:false,
+            allowNull: false,
         },
         idUser: {
             type: DataTypes.INTEGER,
             allowNull: false,
         },
-        idPost: {
+        idImage: {
             type: DataTypes.INTEGER,
-            allowNull: false,
-        },
+            allowNull: false
+        }
     },
     {
-        
-        sequelize, 
+
+        sequelize,
         modelName: 'Rating',
         tableName: 'rating',
         timestamps: true,

@@ -51,9 +51,9 @@ Comment.belongsTo(Image, { foreignKey: 'idImage' })
 Post.hasMany(Like, { foreignKey: 'idPost' })
 Like.belongsTo(Post, { foreignKey: 'idPost' })
 
-//una publicacion tiene muchas Valoraciones (1:n)
-Post.hasMany(Rating, { foreignKey: 'idPost' })
-Rating.belongsTo(Post, { foreignKey: 'idPost' })
+// una imagen tiene muchas valoraciones (1:n)
+Image.hasMany(Rating, { foreignKey: 'idImage' })
+Rating.belongsTo(Image, { foreignKey: 'idImage' })
 
 //una publicacion tiene muchas imagenes (1:n)
 Post.hasMany(Image, { foreignKey: 'idPost' })

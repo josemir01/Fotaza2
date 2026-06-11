@@ -107,3 +107,12 @@ http://localhost:3000
 maria@test.com -> 123456
 juan@test.com -> 123456
 gonzalo@test.com ->123456
+
+
+
+
+## Observaciones
+
+la barra de busqueda por texto de momento solo busca por titulo
+ademas de tener un filtro de busqueda por hashtag
+

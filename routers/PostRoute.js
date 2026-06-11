@@ -11,7 +11,7 @@ import{
     updatePost,
     createComment,
     searchPostsByHashtag,
-    ratePost,
+    rateImage,
     searchPosts,
 } from '../controllers/Postcontroller.js'
 
@@ -25,9 +25,8 @@ router.get('/usuario/:userId', getPostsByUserId)
 router.get('/buscar', searchPostsByHashtag)
 router.get('/buscar-texto', searchPosts)
 router.get('/:postId', getPostById)
-//router.get('/:postId/editar', getEditPost)
 router.post('/:postId/imagen/:imageId/comentar', createComment)
-router.post('/:postId/rating', ratePost)
+router.post('/:postId/imagen/:imageId/rating',rateImage)
 
 
 //router.post('/:postId/editar', updatePost)

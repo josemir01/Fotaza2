@@ -1,28 +1,3 @@
-//- extends  layout.pug 
-
-//- title publicacion
-//- block content 
-//-     h4 comentarios 
-//-         if post.Comments && post.Comments.length
-//-             each comment in post.Comments
-//-                 span=comment.User.fullName
-                
-//-                 p.mb-0=comment.content 
-//-         else
-//-             p no hay comentarios
-
-//-     form(
-//-         action=`/post/${post.postid}/comentar`
-//-         method="POST"
-//-     )
-
-//-         textarea.form-control.mb-2(
-//-             name="content"
-//-             rows="2"
-//-             placeholder="Escribí un comentario..."
-//-         )
-
-//-         button.btn.btn-primary(type="submit") Comentar
 
 extends layout.pug 
 
@@ -39,7 +14,15 @@ block content
             each img in post.Images
                 .card.mb-4
                     .card-body
-                        img.img-fluid.rounded.mb-3(src=img.image,style="max-width:300px")
+                        img.img-fluid.rounded.mb-3(src=img.image, style="max-width:300px")
+
+                        h4.mt-3 Valoración promedio
+
+                        if img.promedioRating && img.promedioRating > 0
+                            p ⭐ #{img.promedioRating} / 5
+                        else
+                            p Todavía no hay valoraciones
+
                         h4 Comentarios
 
                         if img.Comments && img.Comments.length
@@ -52,8 +35,7 @@ block content
                         else
                             p No hay comentarios
 
-                        form(action=`/post/${post.postid}/imagen/${img.imageid}/comentar`, method="POST"
-                        )
+                        form(action=`/post/${post.postid}/imagen/${img.imageid}/comentar`, method="POST")
                             textarea.form-control.mb-2(
                                 name="content"
                                 rows="2"
@@ -61,8 +43,10 @@ block content
                             )
                             button.btn.btn-primary(type="submit")
                                 | Comentar
+
                         h4.mt-4 Valorar imagen
-                        form(action=`/post/${post.postid}/imagen/${img.imageid}/rating` ,method="POST")
+
+                        form(action=`/post/${post.postid}/imagen/${img.imageid}/rating`, method="POST")
                             select.form-select(name="value")
                                 option(value="") --seleccionar valoración--
                                 option(value="1") 1 ⭐
