@@ -104,7 +104,7 @@ http://localhost:3000
 
 ## Usuarios para probar
 
-maria@test.com -> 123456
+maria@test2.com -> 123456
 juan@test.com -> 123456
 gonzalo@test.com ->123456
 
