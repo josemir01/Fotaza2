@@ -145,12 +145,12 @@ export async function updateUser(req, res) {
 
 
 export async function followUser(req, res) {
+    if (!req.session.user) {
+        return res.redirect('/login')
+    }
     const followerId = req.session.user.userid
     const followingId = Number(req.params.userId)
     try {
-        if (!req.session.user) {
-            return res.redirect('/login')
-        }
         //evitar seguirse a sí mismo
         if (followingId === followerId) {
             return res.redirect('/post')

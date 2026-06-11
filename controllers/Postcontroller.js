@@ -79,6 +79,9 @@ export async function searchPostsByHashtag(req, res) {
 //Comment
 
 export async function createComment(req, res) {
+    if(!req.session.user){
+        return res.redirect('/login')
+    }
     try {
         const { content } = req.body
         const postId = Number(req.params.postId)
