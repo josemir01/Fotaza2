@@ -114,7 +114,7 @@ export async function rateImage(req, res) {
 
         //control para que no pueda valorar fuera de rango
         if (!value || value < 1 || value > 5) {
-            res.redirect(`/post/${postId}`)
+            return res.redirect(`/post/${postId}`)
         }
 
         //busco si el usuario ya valoro la publicacion
@@ -135,15 +135,15 @@ export async function rateImage(req, res) {
             await Rating.create({
                 value,
                 idUser: userId,
-                idPost: postId
+                idImage: imageId
             })
         }
 
 
         res.redirect(`/post/${postId}`)
     } catch (error) {
-        console.error('Error al valorar la publicacion:', error)
-        res.status(500).render('error', { msg: 'Error al valorar la publicacion' })
+        console.error('Error al valorar la imagen:', error)
+        res.status(500).render('error', { msg: 'Error al valorar la imagen' })
     }
 
 }
