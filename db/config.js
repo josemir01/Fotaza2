@@ -10,12 +10,12 @@ const sequelize = new Sequelize({
     database: process.env.DB_NAME,
     password: process.env.DB_PASSWORD,
     port: process.env.DB_PORT,
-    dialectOptions: {
-        ssl: {
-            require: true,
-            rejectUnauthorized: false // Esto es obligatorio para que Render y Neon se entiendan sin problemas de certificados
-        }
-    }
+    // dialectOptions: {
+    //     ssl: {
+    //         require: true,
+    //         rejectUnauthorized: false // Esto es obligatorio para que Render y Neon se entiendan sin problemas de certificados
+    //     }
+    // }
 })
 
 export default sequelize

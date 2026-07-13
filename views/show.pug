@@ -29,9 +29,37 @@ block content
                             each comment in img.Comments
                                 .card.mb-2
                                     .card-body
+
                                         if comment.User
                                             strong= comment.User.fullName
-                                        p.mb-0= comment.content
+
+                                        p.mb-2= comment.content
+
+                                        if user && user.userid === comment.idUser
+
+                                            form(
+                                                action=`/post/${post.postid}/imagen/${img.imageid}/comentario/${comment.Commentid}/editar`
+                                                method="POST"
+                                            )
+                                                textarea.form-control.mb-2(
+                                                    name="content"
+                                                    rows="2"
+                                                    required
+                                                )= comment.content
+
+                                                button.btn.btn-warning.btn-sm.me-2(type="submit")
+                                                    | Guardar cambios
+
+                                            form(
+                                                action=`/post/${post.postid}/imagen/${img.imageid}/comentario/${comment.Commentid}/eliminar`
+                                                method="POST"
+                                            )
+                                                button.btn.btn-danger.btn-sm(
+                                                    type="submit"
+                                                    onclick="return confirm('¿Deseás eliminar este comentario?')"
+                                                )
+                                                    | Eliminar
+
                         else
                             p No hay comentarios
 
@@ -41,6 +69,7 @@ block content
                                 rows="2"
                                 placeholder="Escribí un comentario..."
                             )
+
                             button.btn.btn-primary(type="submit")
                                 | Comentar
 

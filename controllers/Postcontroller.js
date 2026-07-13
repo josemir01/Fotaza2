@@ -79,7 +79,7 @@ export async function searchPostsByHashtag(req, res) {
 //Comment
 
 export async function createComment(req, res) {
-    if(!req.session.user){
+    if (!req.session.user) {
         return res.redirect('/login')
     }
     try {
@@ -399,6 +399,109 @@ export async function deletePost(req, res) {
     } catch (error) {
         console.error('Error al eliminar la publicación:', error)
         res.status(500).render('error', { msg: 'Error al eliminar la publicación' })
+    }
+}
+
+//Editar un comentario de una imagen
+export async function updateComment(req, res) {
+
+    if (!req.session.user) {
+        return res.redirect('/login')
+    }
+
+    const postId = Number(req.params.postId)
+    const imageId = Number(req.params.imageId)
+    const commentId = Number(req.params.commentId)
+    const userId = req.session.user.userid
+
+    const content = req.body.content?.trim()
+
+    try {
+
+        if (!content) {
+            return res.redirect(`/post/${postId}`)
+        }
+
+        const comment = await Comment.findByPk(commentId)
+
+        if (!comment) {
+            return res.status(404).render('error', {msg: 'Comentario no encontrado'})
+        }
+
+        // Verificar que el comentario pertenezca a esa imagen
+        if (comment.idImage !== imageId) {
+            return res.status(400).render('error', {
+                msg: 'El comentario no pertenece a esta imagen'
+            })
+        }
+
+        // Solo el autor puede editar
+        if (comment.idUser !== userId) {
+            return res.status(403).render('error', {
+                msg: 'No tenés permiso para editar este comentario'
+            })
+        }
+
+        await comment.update({
+            content
+        })
+
+        return res.redirect(`/post/${postId}`)
+
+    } catch (error) {
+
+        console.error('Error al editar comentario:', error)
+
+        return res.status(500).render('error', {
+            msg: 'Error al editar el comentario'
+        })
+    }
+}
+
+//Eliminar un comentario de una imagen
+export async function deleteComment(req, res) {
+
+    if (!req.session.user) {
+        return res.redirect('/login')
+    }
+
+    const postId = Number(req.params.postId)
+    const imageId = Number(req.params.imageId)
+    const commentId = Number(req.params.commentId)
+    const userId = req.session.user.userid
+
+    try {
+
+        const comment = await Comment.findByPk(commentId)
+
+        if (!comment) {
+            return res.status(404).render('error', {msg: 'Comentario no encontrado'})
+        }
+
+        if (comment.idImage !== imageId) {
+            return res.status(400).render('error', {
+                msg: 'El comentario no pertenece a esta imagen'
+            })
+        }
+
+        // Solo el autor puede eliminar
+        if (comment.idUser !== userId) {
+            return res.status(403).render('error', {
+                msg: 'No tenés permiso para eliminar este comentario'
+            })
+        }
+
+        await comment.destroy()
+
+        return res.redirect(`/post/${postId}`)
+
+    } catch (error) {
+
+        console.error('Error al eliminar comentario:', error)
+
+        return res.status(500).render('error', {
+            msg: 'Error al eliminar el comentario'
+        })
     }
 }
 
