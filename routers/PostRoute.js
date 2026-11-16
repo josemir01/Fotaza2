@@ -12,6 +12,7 @@ import{
     createComment,
     updateComment,
     deleteComment,
+    CloseImageComments,
     searchPostsByHashtag,
     rateImage,
     searchPosts,
@@ -28,6 +29,7 @@ router.get('/buscar', searchPostsByHashtag)
 router.get('/buscar-texto', searchPosts)
 router.get('/:postId', getPostById)
 router.post('/:postId/imagen/:imageId/comentar', createComment)
+router.post('/:postId/imagen/:imageId/comentarios',CloseImageComments)
 router.post('/:postId/imagen/:imageId/comentario/:commentId/editar',updateComment)
 router.post('/:postId/imagen/:imageId/comentario/:commentId/eliminar',deleteComment)
 router.post('/:postId/imagen/:imageId/rating',rateImage)

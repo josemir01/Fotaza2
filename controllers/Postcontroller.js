@@ -87,7 +87,26 @@ export async function createComment(req, res) {
         const postId = Number(req.params.postId)
         const imageId = Number(req.params.imageId)
 
-        const userId = req.session.user.userid // temporal
+        const userId = req.session.user.userid
+
+        const image = await Image.findByPk(imageId)
+
+        if (!image) {
+            return res.status(404).render('error', {msg: 'Imagen no encontrada'})
+        }
+
+        if (image.idPost !== postId) {
+            return res.status(400).render('error', {msg: 'La imagen no pertenece a esta publicación'})
+        }
+
+        if (image.comentDisable) {
+            return res.status(403).render('error', {msg: 'Los comentarios están cerrados para esta imagen'})
+        }
+
+        if (!content || !content.trim()) {
+            return res.redirect(`/post/${postId}`)
+        }
+
 
         await Comment.create({
             content,
@@ -425,38 +444,71 @@ export async function updateComment(req, res) {
         const comment = await Comment.findByPk(commentId)
 
         if (!comment) {
-            return res.status(404).render('error', {msg: 'Comentario no encontrado'})
+            return res.status(404).render('error', { msg: 'Comentario no encontrado' })
         }
 
         // Verificar que el comentario pertenezca a esa imagen
         if (comment.idImage !== imageId) {
-            return res.status(400).render('error', {
-                msg: 'El comentario no pertenece a esta imagen'
-            })
+            return res.status(400).render('error', { msg: 'El comentario no pertenece a esta imagen' })
         }
 
         // Solo el autor puede editar
         if (comment.idUser !== userId) {
-            return res.status(403).render('error', {
-                msg: 'No tenés permiso para editar este comentario'
-            })
+            return res.status(403).render('error', { msg: 'No tenés permiso para editar este comentario' })
         }
 
-        await comment.update({
-            content
-        })
+        await comment.update({ content })
 
         return res.redirect(`/post/${postId}`)
 
     } catch (error) {
-
         console.error('Error al editar comentario:', error)
-
-        return res.status(500).render('error', {
-            msg: 'Error al editar el comentario'
-        })
+        return res.status(500).render('error', { msg: 'Error al editar el comentario' })
     }
 }
+//
+export async function CloseImageComments(req, res) {
+
+    if (!req.session.user) {
+        return res.redirect('/login')
+    }
+
+    const postId = Number(req.params.postId)
+    const imageId = Number(req.params.imageId)
+    const userId = req.session.user.userid
+
+    try {
+
+        const image = await Image.findByPk(imageId, {
+            include: [
+                {
+                    model: Post
+                }
+            ]
+        })
+
+        if (!image) {
+            return res.status(404).render('error', { msg: 'Imagen no encontrada' })
+        }
+
+        if (image.idPost !== postId) {
+            return res.status(400).render('error', { msg: 'La imagen no pertenece a esta publicación' })
+        }
+
+        if (image.Post.idUser !== userId) {
+            return res.status(403).render('error', { msg: 'No tenés permiso para modificar los comentarios de esta imagen' })
+        }
+
+        await image.update({ comentDisable: !image.comentDisable })
+
+        return res.redirect(`/post/${postId}`)
+
+    } catch (error) {
+        console.error('Error al cambiar el estado de comentarios:', error)
+        return res.status(500).render('error', { msg: 'Error al cambiar el estado de los comentarios' })
+    }
+}
+
 
 //Eliminar un comentario de una imagen
 export async function deleteComment(req, res) {
@@ -475,7 +527,7 @@ export async function deleteComment(req, res) {
         const comment = await Comment.findByPk(commentId)
 
         if (!comment) {
-            return res.status(404).render('error', {msg: 'Comentario no encontrado'})
+            return res.status(404).render('error', { msg: 'Comentario no encontrado' })
         }
 
         if (comment.idImage !== imageId) {

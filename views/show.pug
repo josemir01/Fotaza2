@@ -1,4 +1,3 @@
-
 extends layout.pug 
 
 block content
@@ -9,19 +8,20 @@ block content
 
         if post.description
             p= post.description
-
         if post.Images && post.Images.length
             each img in post.Images
                 .card.mb-4
                     .card-body
-                        img.img-fluid.rounded.mb-3(src=img.image, style="max-width:300px")
-
-                        h4.mt-3 Valoración promedio
+                        img.img-fluid.rounded.mb-3(
+                            src=img.image
+                            style="max-width:300px"
+                        )
+                        h4.mt-3 Valoracion promedio
 
                         if img.promedioRating && img.promedioRating > 0
                             p ⭐ #{img.promedioRating} / 5
                         else
-                            p Todavía no hay valoraciones
+                            p Todavia no hay valoraciones
 
                         h4 Comentarios
 
@@ -29,14 +29,10 @@ block content
                             each comment in img.Comments
                                 .card.mb-2
                                     .card-body
-
                                         if comment.User
                                             strong= comment.User.fullName
-
                                         p.mb-2= comment.content
-
                                         if user && user.userid === comment.idUser
-
                                             form(
                                                 action=`/post/${post.postid}/imagen/${img.imageid}/comentario/${comment.Commentid}/editar`
                                                 method="POST"
@@ -46,38 +42,58 @@ block content
                                                     rows="2"
                                                     required
                                                 )= comment.content
-
-                                                button.btn.btn-warning.btn-sm.me-2(type="submit")
-                                                    | Guardar cambios
-
-                                            form(
-                                                action=`/post/${post.postid}/imagen/${img.imageid}/comentario/${comment.Commentid}/eliminar`
-                                                method="POST"
-                                            )
-                                                button.btn.btn-danger.btn-sm(
-                                                    type="submit"
-                                                    onclick="return confirm('¿Deseás eliminar este comentario?')"
-                                                )
-                                                    | Eliminar
-
+                                                .d-flex.gap-2
+                                                    button.btn.btn-warning.btn-sm(
+                                                        type="submit"
+                                                    )
+                                                        | Guardar cambios
+                                                    button.btn.btn-danger.btn-sm(
+                                                        type="submit"
+                                                        formaction=`/post/${post.postid}/imagen/${img.imageid}/comentario/${comment.Commentid}/eliminar`
+                                                        formmethod="POST"
+                                                        onclick="return confirm('¿Deseás eliminar este comentario?')"
+                                                    )
+                                                        | Eliminar
                         else
                             p No hay comentarios
-
-                        form(action=`/post/${post.postid}/imagen/${img.imageid}/comentar`, method="POST")
-                            textarea.form-control.mb-2(
-                                name="content"
-                                rows="2"
-                                placeholder="Escribí un comentario..."
+                        if user && user.userid === post.idUser
+                            form(
+                                action=`/post/${post.postid}/imagen/${img.imageid}/comentarios`
+                                method="POST"
                             )
-
-                            button.btn.btn-primary(type="submit")
-                                | Comentar
-
+                                if img.comentDisable
+                                    button.btn.btn-success.btn-sm.mb-3(
+                                        type="submit"
+                                    )
+                                        | Abrir comentarios
+                                else
+                                    button.btn.btn-secondary.btn-sm.mb-3(
+                                        type="submit"
+                                    )
+                                        | Cerrar comentarios
+                        if img.comentDisable
+                            .alert.alert-secondary
+                                | Los comentarios estan cerrados para esta imagen
+                        else
+                            form(
+                                action=`/post/${post.postid}/imagen/${img.imageid}/comentar`
+                                method="POST"
+                            )
+                                textarea.form-control.mb-2(
+                                    name="content"
+                                    rows="2"
+                                    placeholder="Escribí un comentario..."
+                                    required
+                                )
+                                button.btn.btn-primary(type="submit")
+                                    | Comentar
                         h4.mt-4 Valorar imagen
-
-                        form(action=`/post/${post.postid}/imagen/${img.imageid}/rating`, method="POST")
+                        form(
+                            action=`/post/${post.postid}/imagen/${img.imageid}/rating`
+                            method="POST"
+                        )
                             select.form-select(name="value")
-                                option(value="") --seleccionar valoración--
+                                option(value="") --seleccionar valoracion--
                                 option(value="1") 1 ⭐
                                 option(value="2") 2 ⭐⭐
                                 option(value="3") 3 ⭐⭐⭐
@@ -86,6 +102,5 @@ block content
 
                             button.btn.btn-warning.mt-2(type="submit")
                                 | Valorar
-
         else
-            p Esta publicación no tiene imágenes
+            p Esta publicación no tiene imagenes
