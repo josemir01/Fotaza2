@@ -146,6 +146,13 @@ export async function reportImage(req, res) {
             })
         }
 
+        //evitar que se sature de denuncias y hacer la revision mas facil
+        if (post.underReview) {
+            return res.status(400).render('error', {
+                msg: 'Esta publicación ya se encuentra en revisión'
+            })
+        }
+
         // Crear denuncia
         await Report.create({
             type: 'IMAGE',

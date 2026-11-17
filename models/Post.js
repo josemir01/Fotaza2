@@ -26,6 +26,11 @@ Post.init(
             type: DataTypes.BOOLEAN,
             allowNull: false,
             defaultValue: false
+        },
+        estadoPublicacion: {
+            type: DataTypes.STRING,
+            allowNull: false,
+            defaultValue: 'activa',
         }
     },
     {
