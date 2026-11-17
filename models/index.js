@@ -84,6 +84,18 @@ Post.belongsToMany(Collection, { through: 'SavedPosts' })
 Post.belongsToMany(Hashtag, { through: 'PostHashtags', foreignKey: 'idPost' })
 Hashtag.belongsToMany(Post, { through: 'PostHashtags', foreignKey: 'idHashtag' })
 
+// Una imagen puede recibir muchas denuncias
+Image.hasMany(Report, {foreignKey: 'idImage',as: 'ImageReports'})
+Report.belongsTo(Image, {foreignKey: 'idImage',as: 'ReportedImage'})
+
+// Un comentario puede recibir muchas denuncias
+Comment.hasMany(Report, {foreignKey: 'idComment',as: 'CommentReports'})
+Report.belongsTo(Comment, {foreignKey: 'idComment',as: 'ReportedComment'})
+
+// Un usuario puede realizar muchas denuncias
+User.hasMany(Report, {foreignKey: 'idUser',as: 'ReportsMade'})
+Report.belongsTo(User, {foreignKey: 'idUser',as: 'Reporter'})
+
 
 
 
@@ -103,5 +115,5 @@ export {
     User,
     Post,
     Image,
-    Comment
+    Comment,
 }

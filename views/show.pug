@@ -1,4 +1,4 @@
-extends layout.pug 
+extends layout.pug
 
 block content
 
@@ -8,6 +8,27 @@ block content
 
         if post.description
             p= post.description
+
+        // EDITAR PUBLICACION Y VER DENUNCIAS
+        if user && user.userid === post.idUser
+
+            if tieneDenuncias
+                .alert.alert-warning.mt-3
+                    strong Publicacion bloqueada
+                    p.mb-0 Esta publicacion tiene denuncias pendientes y no puede ser modificada.
+
+            .d-flex.gap-2.mb-3
+                if !tieneDenuncias
+                    a.btn.btn-warning(
+                        href=`/post/${post.postid}/editar`
+                    )
+                        | Editar publicacion
+
+                a.btn.btn-outline-danger(
+                    href=`/denuncias/publicacion/${post.postid}/comentarios`
+                )
+                    | Ver denuncias de comentarios
+
         if post.Images && post.Images.length
             each img in post.Images
                 .card.mb-4
@@ -16,12 +37,44 @@ block content
                             src=img.image
                             style="max-width:300px"
                         )
+
                         h4.mt-3 Valoracion promedio
 
                         if img.promedioRating && img.promedioRating > 0
                             p ⭐ #{img.promedioRating} / 5
                         else
                             p Todavia no hay valoraciones
+
+                        // DENUNCIAR IMAGEN
+                        if user && user.userid !== post.idUser
+                            details.mb-3
+                                summary.text-danger.small
+                                    | Denunciar imagen
+
+                                form.mt-3(
+                                    action=`/denuncias/imagen/${img.imageid}`
+                                    method="POST"
+                                )
+                                    select.form-select.mb-2(
+                                        name="reason"
+                                        required
+                                    )
+                                        option(value="") -- Seleccionar motivo --
+                                        option(value="Contenido inapropiado") Contenido inapropiado
+                                        option(value="Violencia") Violencia
+                                        option(value="Spam") Spam
+                                        option(value="Copyright") Infraccion de copyright
+                                        option(value="Otro") Otro
+
+                                    textarea.form-control.mb-2(
+                                        name="description"
+                                        rows="3"
+                                        placeholder="Explique el motivo de la denuncia..."
+                                        required
+                                    )
+
+                                    button.btn.btn-danger.btn-sm(type="submit")
+                                        | Enviar denuncia
 
                         h4 Comentarios
 
@@ -31,7 +84,10 @@ block content
                                     .card-body
                                         if comment.User
                                             strong= comment.User.fullName
+
                                         p.mb-2= comment.content
+
+                                        // EDITAR Y ELIMINAR COMENTARIO
                                         if user && user.userid === comment.idUser
                                             form(
                                                 action=`/post/${post.postid}/imagen/${img.imageid}/comentario/${comment.Commentid}/editar`
@@ -42,11 +98,13 @@ block content
                                                     rows="2"
                                                     required
                                                 )= comment.content
+
                                                 .d-flex.gap-2
                                                     button.btn.btn-warning.btn-sm(
                                                         type="submit"
                                                     )
                                                         | Guardar cambios
+
                                                     button.btn.btn-danger.btn-sm(
                                                         type="submit"
                                                         formaction=`/post/${post.postid}/imagen/${img.imageid}/comentario/${comment.Commentid}/eliminar`
@@ -54,8 +112,43 @@ block content
                                                         onclick="return confirm('¿Deseás eliminar este comentario?')"
                                                     )
                                                         | Eliminar
+
+                                        // DENUNCIAR COMENTARIO
+                                        if user && user.userid !== comment.idUser
+                                            details.mt-2
+                                                summary.text-danger.small
+                                                    | Denunciar comentario
+
+                                                form.mt-2(
+                                                    action=`/denuncias/comentario/${comment.Commentid}`
+                                                    method="POST"
+                                                )
+                                                    select.form-select.mb-2(
+                                                        name="reason"
+                                                        required
+                                                    )
+                                                        option(value="") -- Seleccionar motivo --
+                                                        option(value="Spam") Spam
+                                                        option(value="Ofensivo") Contenido ofensivo
+                                                        option(value="Acoso") Acoso
+                                                        option(value="Otro") Otro
+
+                                                    textarea.form-control.mb-2(
+                                                        name="description"
+                                                        rows="2"
+                                                        placeholder="Explique el motivo..."
+                                                        required
+                                                    )
+
+                                                    button.btn.btn-danger.btn-sm(
+                                                        type="submit"
+                                                    )
+                                                        | Enviar denuncia
+
                         else
                             p No hay comentarios
+
+                        // ABRIR Y CERRAR COMENTARIOS
                         if user && user.userid === post.idUser
                             form(
                                 action=`/post/${post.postid}/imagen/${img.imageid}/comentarios`
@@ -71,6 +164,7 @@ block content
                                         type="submit"
                                     )
                                         | Cerrar comentarios
+
                         if img.comentDisable
                             .alert.alert-secondary
                                 | Los comentarios estan cerrados para esta imagen
@@ -85,9 +179,12 @@ block content
                                     placeholder="Escribí un comentario..."
                                     required
                                 )
+
                                 button.btn.btn-primary(type="submit")
                                     | Comentar
+
                         h4.mt-4 Valorar imagen
+
                         form(
                             action=`/post/${post.postid}/imagen/${img.imageid}/rating`
                             method="POST"
@@ -102,5 +199,6 @@ block content
 
                             button.btn.btn-warning.mt-2(type="submit")
                                 | Valorar
+
         else
-            p Esta publicación no tiene imagenes
+            p Esta publicación no tiene imagen

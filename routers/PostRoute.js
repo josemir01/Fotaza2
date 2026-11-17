@@ -33,10 +33,10 @@ router.post('/:postId/imagen/:imageId/comentarios',CloseImageComments)
 router.post('/:postId/imagen/:imageId/comentario/:commentId/editar',updateComment)
 router.post('/:postId/imagen/:imageId/comentario/:commentId/eliminar',deleteComment)
 router.post('/:postId/imagen/:imageId/rating',rateImage)
+router.get('/:postId/editar', getEditPost)
+router.post('/:postId/editar', updatePost)
+router.post('/:postId/eliminar', deletePost)
 
-
-//router.post('/:postId/editar', updatePost)
-//router.post('/:postId/eliminar', deletePost)
 
 
 export default router

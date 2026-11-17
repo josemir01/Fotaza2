@@ -1,43 +1,51 @@
 import { DataTypes, Model } from "sequelize";
 import sequelize from "../db/config.js";
 
-export class Report extends Model {}
+export class Report extends Model { }
 
 Report.init(
     {
-        reportid:{
+        reportid: {
             type: DataTypes.INTEGER,
             autoIncrement: true,
-            primaryKey:true,
+            primaryKey: true,
         },
-        motive:{
+        reason: {
             type: DataTypes.STRING,
             allowNull: false,
         },
-        state:{
+        description: {
+            type: DataTypes.TEXT,
+            allowNull: false,
+        },
+        status: {
             type: DataTypes.STRING,
             allowNull: false,
+        },
+        type: {
+            type: DataTypes.STRING,
+            allowNull: false
         },
         idUser: {
-            type: DataTypes.INTEGER,
-            allowNull: true,
-        },
-        idPost: {
             type: DataTypes.INTEGER,
             allowNull: true,
         },
         idComment: {
             type: DataTypes.INTEGER,
             allowNull: true,
+        },
+        idImage: {
+            type: DataTypes.INTEGER,
+            allowNull: true,
         }
     },
     {
-        
-        sequelize, 
+
+        sequelize,
         modelName: 'Report',
         tableName: 'report',
         createdAt: true,
-        deletedAt: true,
+        paranoid: true,
     },
 );
 

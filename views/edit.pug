@@ -1,0 +1,35 @@
+
+extends layout.pug
+
+block content
+
+    .container.mt-4
+
+        h2 Editar publicación
+
+        .card.mt-3
+            .card-body
+
+                h4= post.title
+
+                form(
+                    action=`/post/${post.postid}/editar`
+                    method="POST"
+                )
+
+                    .mb-3
+                        label.form-label Descripción
+
+                        textarea.form-control(
+                            name="description"
+                            rows="5"
+                        )= post.description
+
+                    .d-flex.gap-2
+                        button.btn.btn-primary(type="submit")
+                            | Guardar cambios
+
+                        a.btn.btn-secondary(
+                            href=`/post/${post.postid}`
+                        )
+                            | Cancelar

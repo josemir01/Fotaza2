@@ -4,6 +4,7 @@ import sequelize from './db/config.js';
 import UserRoute from './routers/UserRoute.js';
 import PostRoute from './routers/PostRoute.js';
 import AuthRoute from './routers/AuthRoute.js'
+import ReportRoute from './routers/ReportRoute.js'
 import './models/index.js'
 import { connectDatabase } from './models/index.js'
 import session from 'express-session'
@@ -43,6 +44,7 @@ app.get('/profile', (req, res) => {
 app.use('/', AuthRoute)
 app.use('/usuario', UserRoute)
 app.use('/post', PostRoute)
+app.use('/denuncias', ReportRoute)
 
 //pagina de inicio
 app.get("/", (req, res) => {

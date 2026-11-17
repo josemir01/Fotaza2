@@ -1,0 +1,69 @@
+
+extends layout.pug
+
+block content
+
+    .container.mt-4
+
+        h2 Denuncias de comentarios
+
+        h5.mb-4 Publicación: #{post.title}
+
+        a.btn.btn-secondary.mb-4(
+            href=`/post/${post.postid}`
+        )
+            | Volver a la publicación
+
+        if comentariosDenunciados.length
+
+            each item in comentariosDenunciados
+
+                .card.mb-4
+                    .card-body
+
+                        h5 Comentario denunciado
+
+                        p= item.comment.content
+
+                        p.text-muted
+                            | Denuncias recibidas: #{item.reports.length}
+
+                        h6.mt-3 Motivos de las denuncias
+
+                        each report in item.reports
+
+                            .border.rounded.p-3.mb-2
+
+                                p.mb-1
+                                    strong Motivo:
+                                    |  #{report.reason}
+
+                                p.mb-1
+                                    strong Descripción:
+                                    |  #{report.description}
+
+                        .d-flex.gap-2.mt-3
+
+                            form(
+                                action=`/denuncias/comentario/${item.comment.Commentid}/eliminar`
+                                method="POST"
+                            )
+                                button.btn.btn-danger.btn-sm(
+                                    type="submit"
+                                    onclick="return confirm('¿Eliminar este comentario denunciado?')"
+                                )
+                                    | Eliminar comentario
+
+                            form(
+                                action=`/denuncias/comentario/${item.comment.Commentid}/desestimar`
+                                method="POST"
+                            )
+                                button.btn.btn-success.btn-sm(
+                                    type="submit"
+                                )
+                                    | Desestimar denuncias
+
+        else
+
+            .alert.alert-success
+                | Esta publicación no tiene denuncias de comentarios pendientes.

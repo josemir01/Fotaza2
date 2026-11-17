@@ -6,8 +6,40 @@
 import { Rating } from '../models/Rating.js'
 import { Hashtag } from '../models/Hashtag.js'
 import { User, Post, Image, Comment } from '../models/index.js'
+import { Report } from '../models/Report.js'
 import { Op } from 'sequelize'
 
+
+//verificar si la publicacion tiene denuncias
+async function postTieneDenuncias(postId) {
+
+    // Buscar todas las imagenes de la publicacion
+    const imagenes = await Image.findAll({
+        where: {
+            idPost: postId
+        },
+        attributes: ['imageid']
+    })
+
+    const imageIds = imagenes.map(img => img.imageid)
+
+    if (imageIds.length === 0) {
+        return false
+    }
+
+    // Verificar si alguna imagen tiene denuncias pendientes
+    const denuncia = await Report.findOne({
+        where: {
+            idImage: {
+                [Op.in]: imageIds
+            },
+            type: 'IMAGE',
+            status: 'PENDING'
+        }
+    })
+
+    return denuncia !== null
+}
 
 //Hashtags
 async function fetchAllHashtags() {
@@ -92,15 +124,15 @@ export async function createComment(req, res) {
         const image = await Image.findByPk(imageId)
 
         if (!image) {
-            return res.status(404).render('error', {msg: 'Imagen no encontrada'})
+            return res.status(404).render('error', { msg: 'Imagen no encontrada' })
         }
 
         if (image.idPost !== postId) {
-            return res.status(400).render('error', {msg: 'La imagen no pertenece a esta publicación'})
+            return res.status(400).render('error', { msg: 'La imagen no pertenece a esta publicación' })
         }
 
         if (image.comentDisable) {
-            return res.status(403).render('error', {msg: 'Los comentarios están cerrados para esta imagen'})
+            return res.status(403).render('error', { msg: 'Los comentarios están cerrados para esta imagen' })
         }
 
         if (!content || !content.trim()) {
@@ -264,7 +296,9 @@ export async function getPostById(req, res) {
             img.promedioRating = promedioRating
         }
 
-        res.render('show', { post })
+        // Verificar denuncias pendientes
+        const tieneDenuncias = await postTieneDenuncias(postId)
+        res.render('show', { post, tieneDenuncias })
     } catch (error) {
         console.error('ERROR COMPLETO:', error)
         res.status(500).render('error', { msg: 'Error interno al obtener la publicación' })
@@ -357,16 +391,31 @@ export async function getEditPost(req, res) {
         return res.redirect('/login')
     }
     const postId = Number(req.params.postId)
+
     try {
+
         const post = await Post.findOne({ where: { postid: postId } })
         if (!post) {
             return res.status(404).render('post/error', { msg: 'Publicación no encontrada' })
         }
         // Solo el autor puede editar
-        if (post.UserId !== req.session.user.userid) {
-            return res.status(403).render('error', { msg: 'No tenés permiso para editar esta publicación' })
+        const esAutor = post.idUser === req.session.user.userid
+        if (!esAutor) {
+            return res.status(403).render('error', {
+                msg: 'No tenés permiso para editar esta publicación'
+            })
         }
-        res.render('post/edit', { post })
+
+        // Verificar si la publicación tiene denuncias
+        const tieneDenuncias = await postTieneDenuncias(postId)
+
+        if (tieneDenuncias) {
+            return res.status(403).render('error', {
+                msg: 'No podés editar esta publicación porque tiene denuncias pendientes'
+            })
+        }
+        console.log('Llegué al render de edición')
+        res.render('edit', { post })
     } catch (error) {
         console.error('Error al obtener la publicación para edición:', error)
         res.status(500).render('error', { msg: 'Error interno' })
@@ -384,10 +433,20 @@ export async function updatePost(req, res) {
         if (!post) {
             return res.status(404).render('post/error', { msg: 'Publicación no encontrada' })
         }
+        //solo el autor puede editar
         if (post.UserId !== req.session.user.userid) {
             return res.status(403).render('error', { msg: 'No tenés permiso para editar esta publicación' })
         }
 
+        // Verificar si la publicación tiene denuncias pendientes
+        const tieneDenuncias = await postTieneDenuncias(postId)
+
+        if (tieneDenuncias) {
+            return res.status(403).render('error', {
+                msg: 'No podés modificar esta publicación porque tiene denuncias pendientes'
+            })
+        }
+        //actualizar la publicacion
         const { description } = req.body
         await post.update({ description: description || null })
 
