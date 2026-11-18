@@ -108,12 +108,13 @@ export async function searchPostsByHashtag(req, res) {
 }
 //////////////////////////////////////////////////////////////////////////////
 
-//Comment
+// Comment
 
 export async function createComment(req, res) {
     if (!req.session.user) {
         return res.redirect('/login')
     }
+
     try {
         const { content } = req.body
         const postId = Number(req.params.postId)
@@ -121,61 +122,128 @@ export async function createComment(req, res) {
 
         const userId = req.session.user.userid
 
+        // Buscar la publicación
+        const post = await Post.findByPk(postId)
+
+        if (!post) {
+            return res.status(404).render('error', {
+                msg: 'Publicación no encontrada'
+            })
+        }
+
+        // Verificar si la publicación está bloqueada
+        if (post.estadoPublicacion !== 'activa') {
+            return res.status(403).render('error', {
+                msg: 'No podés comentar porque esta publicación está bloqueada'
+            })
+        }
+
+        // Buscar la imagen
         const image = await Image.findByPk(imageId)
 
         if (!image) {
-            return res.status(404).render('error', { msg: 'Imagen no encontrada' })
+            return res.status(404).render('error', {
+                msg: 'Imagen no encontrada'
+            })
         }
 
+        // Verificar que la imagen pertenezca a la publicación
         if (image.idPost !== postId) {
-            return res.status(400).render('error', { msg: 'La imagen no pertenece a esta publicación' })
+            return res.status(400).render('error', {
+                msg: 'La imagen no pertenece a esta publicación'
+            })
         }
 
+        // Verificar si los comentarios están cerrados
         if (image.comentDisable) {
-            return res.status(403).render('error', { msg: 'Los comentarios están cerrados para esta imagen' })
+            return res.status(403).render('error', {
+                msg: 'Los comentarios están cerrados para esta imagen'
+            })
         }
 
+        // Validar contenido
         if (!content || !content.trim()) {
             return res.redirect(`/post/${postId}`)
         }
 
-
+        // Crear comentario
         await Comment.create({
-            content,
+            content: content.trim(),
             idUser: userId,
             idPost: postId,
             idImage: imageId
         })
 
-        res.redirect(`/post/${postId}`)
+        return res.redirect(`/post/${postId}`)
 
     } catch (error) {
         console.error('Error al crear un comentario:', error)
-        res.status(500).render('error', { msg: 'Error al crear un comentario' })
+
+        return res.status(500).render('error', {
+            msg: 'Error al crear un comentario'
+        })
     }
 }
 
+
 ////////////////////////////////////////////////////////////////////////////////
 
-//Rating
+
+// Rating
 
 export async function rateImage(req, res) {
 
     if (!req.session.user) {
         return res.redirect('/login')
     }
+
     const postId = Number(req.params.postId)
-    const value = Number(req.body.value)
     const imageId = Number(req.params.imageId)
+    const value = Number(req.body.value)
     const userId = req.session.user.userid
+
     try {
 
-        //control para que no pueda valorar fuera de rango
-        if (!value || value < 1 || value > 5) {
-            return res.redirect(`/post/${postId}`)
+        // Buscar la publicación
+        const post = await Post.findByPk(postId)
+
+        if (!post) {
+            return res.status(404).render('error', {
+                msg: 'Publicación no encontrada'
+            })
         }
 
-        //busco si el usuario ya valoro la publicacion
+        // Verificar si la publicación está bloqueada
+        if (post.estadoPublicacion !== 'activa') {
+            return res.status(403).render('error', {
+                msg: 'No podés valorar imágenes de una publicación bloqueada'
+            })
+        }
+
+        // Buscar la imagen
+        const image = await Image.findByPk(imageId)
+
+        if (!image) {
+            return res.status(404).render('error', {
+                msg: 'Imagen no encontrada'
+            })
+        }
+
+        // Verificar que pertenezca a la publicación
+        if (image.idPost !== postId) {
+            return res.status(400).render('error', {
+                msg: 'La imagen no pertenece a esta publicación'
+            })
+        }
+
+        // Validar valoración entre 1 y 5
+        if (!Number.isInteger(value) || value < 1 || value > 5) {
+            return res.status(400).render('error', {
+                msg: 'La valoración debe ser un número entero entre 1 y 5'
+            })
+        }
+
+        // Buscar si el usuario ya valoró la imagen
         const ratingExistente = await Rating.findOne({
             where: {
                 idUser: userId,
@@ -183,13 +251,16 @@ export async function rateImage(req, res) {
             }
         })
 
-        // si el usuario valoro la publicacion actualizo
+        // Actualizar valoración existente
         if (ratingExistente) {
+
             await ratingExistente.update({
                 value
             })
+
         } else {
-            // si no hay lo creo
+
+            // Crear nueva valoración
             await Rating.create({
                 value,
                 idUser: userId,
@@ -197,14 +268,18 @@ export async function rateImage(req, res) {
             })
         }
 
+        return res.redirect(`/post/${postId}`)
 
-        res.redirect(`/post/${postId}`)
     } catch (error) {
-        console.error('Error al valorar la imagen:', error)
-        res.status(500).render('error', { msg: 'Error al valorar la imagen' })
-    }
 
+        console.error('Error al valorar la imagen:', error)
+
+        return res.status(500).render('error', {
+            msg: 'Error al valorar la imagen'
+        })
+    }
 }
+
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -215,6 +290,9 @@ export async function rateImage(req, res) {
 export async function getPosts(req, res) {
     try {
         const posts = await Post.findAll({
+            where: {
+                estadoPublicacion: 'activa'
+            },
             include: [
                 {
                     model: User,
@@ -281,6 +359,13 @@ export async function getPostById(req, res) {
             return res.status(404).render('post/error', { msg: 'Publicación no encontrada' })
         }
 
+        // Verificar si la publicación está bloqueada
+        if (post.estadoPublicacion === 'bloqueada') {
+            return res.status(403).render('error', {
+                msg: 'Esta publicación fue bloqueada por un administrador'
+            })
+        }
+
         //sacar el promedio de valoraciones
         //obtiene todas las valoraciones
         for (const img of post.Images || []) {
@@ -319,7 +404,7 @@ export async function getPostsByUserId(req, res) {
         }
 
         const posts = await Post.findAll({
-            where: { UserId: userId },
+            where: { IdUser: userId },
             order: [['createdAt', 'DESC']]
         })
 
@@ -398,6 +483,17 @@ export async function getEditPost(req, res) {
         if (!post) {
             return res.status(404).render('post/error', { msg: 'Publicación no encontrada' })
         }
+
+        console.log('Autor de la publicación:', post.idUser)
+console.log('Usuario conectado:', req.session.user.userid)
+
+        // Verificar si la publicación está bloqueada
+        if (post.estadoPublicacion !== 'activa') {
+            return res.status(403).render('error', {
+                msg: 'No podés editar una publicación bloqueada por un administrador'
+            })
+        }
+
         // Solo el autor puede editar
         const esAutor = post.idUser === req.session.user.userid
         if (!esAutor) {
@@ -414,7 +510,7 @@ export async function getEditPost(req, res) {
                 msg: 'No podés editar esta publicación porque tiene denuncias pendientes'
             })
         }
-        console.log('Llegué al render de edición')
+
         res.render('edit', { post })
     } catch (error) {
         console.error('Error al obtener la publicación para edición:', error)
@@ -422,23 +518,43 @@ export async function getEditPost(req, res) {
     }
 }
 
+
 // POST /post/:postId/editar — guardar cambios de la publicación
 export async function updatePost(req, res) {
+
     if (!req.session.user) {
         return res.redirect('/login')
     }
+
     const postId = Number(req.params.postId)
+    const userId = req.session.user.userid
+
     try {
-        const post = await Post.findOne({ where: { postid: postId } })
+
+        // Buscar la publicación
+        const post = await Post.findByPk(postId)
+
         if (!post) {
-            return res.status(404).render('post/error', { msg: 'Publicación no encontrada' })
-        }
-        //solo el autor puede editar
-        if (post.UserId !== req.session.user.userid) {
-            return res.status(403).render('error', { msg: 'No tenés permiso para editar esta publicación' })
+            return res.status(404).render('error', {
+                msg: 'Publicación no encontrada'
+            })
         }
 
-        // Verificar si la publicación tiene denuncias pendientes
+        // Verificar si la publicación está bloqueada
+        if (post.estadoPublicacion !== 'activa') {
+            return res.status(403).render('error', {
+                msg: 'No podés editar una publicación bloqueada por un administrador'
+            })
+        }
+
+        // Solo el autor puede editar
+        if (post.idUser !== userId) {
+            return res.status(403).render('error', {
+                msg: 'No tenés permiso para editar esta publicación'
+            })
+        }
+
+        // Verificar si tiene denuncias pendientes
         const tieneDenuncias = await postTieneDenuncias(postId)
 
         if (tieneDenuncias) {
@@ -446,41 +562,87 @@ export async function updatePost(req, res) {
                 msg: 'No podés modificar esta publicación porque tiene denuncias pendientes'
             })
         }
-        //actualizar la publicacion
-        const { description } = req.body
-        await post.update({ description: description || null })
 
-        res.redirect(`/post/${postId}`)
+        // Obtener descripción
+        const { description } = req.body
+
+        // Actualizar publicación
+        await post.update({
+            description: description?.trim() || null
+        })
+
+        return res.redirect(`/post/${postId}`)
+
     } catch (error) {
+
         console.error('Error al actualizar la publicación:', error)
-        res.status(500).render('error', { msg: 'Error al actualizar la publicación' })
+
+        return res.status(500).render('error', {
+            msg: 'Error al actualizar la publicación'
+        })
     }
 }
+
+
 
 // POST /post/:postId/eliminar — eliminar una publicación
 export async function deletePost(req, res) {
+
     if (!req.session.user) {
         return res.redirect('/login')
     }
+
     const postId = Number(req.params.postId)
+    const userId = req.session.user.userid
+
     try {
-        const post = await Post.findOne({ where: { postid: postId } })
+        const post = await Post.findByPk(postId)
+
         if (!post) {
-            return res.status(404).render('post/error', { msg: 'Publicación no encontrada' })
-        }
-        if (post.UserId !== req.session.user.userid) {
-            return res.status(403).render('error', { msg: 'No tenés permiso para eliminar esta publicación' })
+            return res.status(404).render('error', {
+                msg: 'Publicación no encontrada'
+            })
         }
 
+        // Solo el autor puede eliminar
+        if (post.idUser !== userId) {
+            return res.status(403).render('error', {
+                msg: 'No tenés permiso para eliminar esta publicación'
+            })
+        }
+
+        // No permitir eliminar publicaciones bloqueadas
+        if (post.estadoPublicacion !== 'activa') {
+            return res.status(403).render('error', {
+                msg: 'No podés eliminar una publicación bloqueada por un administrador'
+            })
+        }
+
+        // Verificar denuncias pendientes
+        const tieneDenuncias = await postTieneDenuncias(postId)
+
+        if (tieneDenuncias) {
+            return res.status(403).render('error', {
+                msg: 'No podés eliminar esta publicación porque tiene denuncias pendientes'
+            })
+        }
+
+        // Eliminar publicación
         await post.destroy()
-        res.redirect(`/usuario/${req.session.user.userid}`)
+
+        return res.redirect(`/usuario/${userId}`)
+
     } catch (error) {
         console.error('Error al eliminar la publicación:', error)
-        res.status(500).render('error', { msg: 'Error al eliminar la publicación' })
+
+        return res.status(500).render('error', {
+            msg: 'Error al eliminar la publicación'
+        })
     }
 }
 
-//Editar un comentario de una imagen
+
+// Editar un comentario de una imagen
 export async function updateComment(req, res) {
 
     if (!req.session.user) {
@@ -496,36 +658,66 @@ export async function updateComment(req, res) {
 
     try {
 
+        // Buscar la publicación
+        const post = await Post.findByPk(postId)
+
+        if (!post) {
+            return res.status(404).render('error', {
+                msg: 'Publicación no encontrada'
+            })
+        }
+
+        // Verificar si la publicación está bloqueada
+        if (post.estadoPublicacion !== 'activa') {
+            return res.status(403).render('error', {
+                msg: 'No podés editar comentarios de una publicación bloqueada'
+            })
+        }
+
+        // Validar contenido
         if (!content) {
             return res.redirect(`/post/${postId}`)
         }
 
+        // Buscar el comentario
         const comment = await Comment.findByPk(commentId)
 
         if (!comment) {
-            return res.status(404).render('error', { msg: 'Comentario no encontrado' })
+            return res.status(404).render('error', {
+                msg: 'Comentario no encontrado'
+            })
         }
 
-        // Verificar que el comentario pertenezca a esa imagen
-        if (comment.idImage !== imageId) {
-            return res.status(400).render('error', { msg: 'El comentario no pertenece a esta imagen' })
+        // Verificar que pertenezca a la imagen y publicación
+        if (comment.idImage !== imageId || comment.idPost !== postId) {
+            return res.status(400).render('error', {
+                msg: 'El comentario no pertenece a esta imagen o publicación'
+            })
         }
 
         // Solo el autor puede editar
         if (comment.idUser !== userId) {
-            return res.status(403).render('error', { msg: 'No tenés permiso para editar este comentario' })
+            return res.status(403).render('error', {
+                msg: 'No tenés permiso para editar este comentario'
+            })
         }
 
+        // Actualizar comentario
         await comment.update({ content })
 
         return res.redirect(`/post/${postId}`)
 
     } catch (error) {
         console.error('Error al editar comentario:', error)
-        return res.status(500).render('error', { msg: 'Error al editar el comentario' })
+
+        return res.status(500).render('error', {
+            msg: 'Error al editar el comentario'
+        })
     }
 }
-//
+
+
+// Abrir o cerrar comentarios de una imagen
 export async function CloseImageComments(req, res) {
 
     if (!req.session.user) {
@@ -538,6 +730,7 @@ export async function CloseImageComments(req, res) {
 
     try {
 
+        // Buscar la imagen con su publicación
         const image = await Image.findByPk(imageId, {
             include: [
                 {
@@ -547,29 +740,59 @@ export async function CloseImageComments(req, res) {
         })
 
         if (!image) {
-            return res.status(404).render('error', { msg: 'Imagen no encontrada' })
+            return res.status(404).render('error', {
+                msg: 'Imagen no encontrada'
+            })
         }
 
+        // Verificar que la imagen pertenezca a la publicación
         if (image.idPost !== postId) {
-            return res.status(400).render('error', { msg: 'La imagen no pertenece a esta publicación' })
+            return res.status(400).render('error', {
+                msg: 'La imagen no pertenece a esta publicación'
+            })
         }
 
+        // Verificar que la publicación exista
+        if (!image.Post) {
+            return res.status(404).render('error', {
+                msg: 'Publicación no encontrada'
+            })
+        }
+
+        // Verificar si la publicación está bloqueada
+        if (image.Post.estadoPublicacion !== 'activa') {
+            return res.status(403).render('error', {
+                msg: 'No podés modificar los comentarios de una publicación bloqueada'
+            })
+        }
+
+        // Solo el autor de la publicación puede abrir o cerrar comentarios
         if (image.Post.idUser !== userId) {
-            return res.status(403).render('error', { msg: 'No tenés permiso para modificar los comentarios de esta imagen' })
+            return res.status(403).render('error', {
+                msg: 'No tenés permiso para modificar los comentarios de esta imagen'
+            })
         }
 
-        await image.update({ comentDisable: !image.comentDisable })
+        // Cambiar el estado de los comentarios
+        await image.update({
+            comentDisable: !image.comentDisable
+        })
 
         return res.redirect(`/post/${postId}`)
 
     } catch (error) {
+
         console.error('Error al cambiar el estado de comentarios:', error)
-        return res.status(500).render('error', { msg: 'Error al cambiar el estado de los comentarios' })
+
+        return res.status(500).render('error', {
+            msg: 'Error al cambiar el estado de los comentarios'
+        })
     }
 }
 
 
-//Eliminar un comentario de una imagen
+
+// Eliminar un comentario de una imagen
 export async function deleteComment(req, res) {
 
     if (!req.session.user) {
@@ -583,15 +806,35 @@ export async function deleteComment(req, res) {
 
     try {
 
+        // Buscar la publicación
+        const post = await Post.findByPk(postId)
+
+        if (!post) {
+            return res.status(404).render('error', {
+                msg: 'Publicación no encontrada'
+            })
+        }
+
+        // Verificar si la publicación está bloqueada
+        if (post.estadoPublicacion !== 'activa') {
+            return res.status(403).render('error', {
+                msg: 'No podés eliminar comentarios de una publicación bloqueada'
+            })
+        }
+
+        // Buscar el comentario
         const comment = await Comment.findByPk(commentId)
 
         if (!comment) {
-            return res.status(404).render('error', { msg: 'Comentario no encontrado' })
+            return res.status(404).render('error', {
+                msg: 'Comentario no encontrado'
+            })
         }
 
-        if (comment.idImage !== imageId) {
+        // Verificar que pertenezca a la imagen y publicación
+        if (comment.idImage !== imageId || comment.idPost !== postId) {
             return res.status(400).render('error', {
-                msg: 'El comentario no pertenece a esta imagen'
+                msg: 'El comentario no pertenece a esta imagen o publicación'
             })
         }
 
@@ -602,6 +845,7 @@ export async function deleteComment(req, res) {
             })
         }
 
+        // Eliminar comentario
         await comment.destroy()
 
         return res.redirect(`/post/${postId}`)
@@ -615,6 +859,7 @@ export async function deleteComment(req, res) {
         })
     }
 }
+
 
 
 export async function searchPosts(req, res) {

@@ -18,6 +18,7 @@ import{
     searchPosts,
 } from '../controllers/Postcontroller.js'
 
+import { checkPostActive } from '../middlewares/checkPostActive.js'
 
 const router=Router()
 
@@ -28,14 +29,14 @@ router.get('/usuario/:userId', getPostsByUserId)
 router.get('/buscar', searchPostsByHashtag)
 router.get('/buscar-texto', searchPosts)
 router.get('/:postId', getPostById)
-router.post('/:postId/imagen/:imageId/comentar', createComment)
-router.post('/:postId/imagen/:imageId/comentarios',CloseImageComments)
-router.post('/:postId/imagen/:imageId/comentario/:commentId/editar',updateComment)
-router.post('/:postId/imagen/:imageId/comentario/:commentId/eliminar',deleteComment)
-router.post('/:postId/imagen/:imageId/rating',rateImage)
-router.get('/:postId/editar', getEditPost)
-router.post('/:postId/editar', updatePost)
-router.post('/:postId/eliminar', deletePost)
+router.post('/:postId/imagen/:imageId/comentar',checkPostActive, createComment)
+router.post('/:postId/imagen/:imageId/comentarios',checkPostActive,CloseImageComments)
+router.post('/:postId/imagen/:imageId/comentario/:commentId/editar',checkPostActive,updateComment)
+router.post('/:postId/imagen/:imageId/comentario/:commentId/eliminar',checkPostActive,deleteComment)
+router.post('/:postId/imagen/:imageId/rating',checkPostActive,rateImage)
+router.get('/:postId/editar', checkPostActive,getEditPost)
+router.post('/:postId/editar',checkPostActive, updatePost)
+router.post('/:postId/eliminar',checkPostActive, deletePost)
 
 
 

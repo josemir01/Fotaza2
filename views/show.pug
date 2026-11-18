@@ -1,3 +1,4 @@
+
 extends layout.pug
 
 block content
@@ -9,7 +10,7 @@ block content
         if post.description
             p= post.description
 
-        // EDITAR PUBLICACION Y VER DENUNCIAS
+        // EDITAR, ELIMINAR Y VER DENUNCIAS
         if user && user.userid === post.idUser
 
             if tieneDenuncias
@@ -17,12 +18,22 @@ block content
                     strong Publicacion bloqueada
                     p.mb-0 Esta publicacion tiene denuncias pendientes y no puede ser modificada.
 
-            .d-flex.gap-2.mb-3
+            .d-flex.flex-wrap.gap-2.mb-3
                 if !tieneDenuncias
                     a.btn.btn-warning(
                         href=`/post/${post.postid}/editar`
                     )
                         | Editar publicacion
+
+                // ELIMINAR PUBLICACION
+                if !tieneDenuncias && post.estadoPublicacion === 'activa'
+                    form(
+                        action=`/post/${post.postid}/eliminar`
+                        method="POST"
+                        onsubmit="return confirm('¿Estás seguro de eliminar esta publicación?')"
+                    )
+                        button.btn.btn-danger(type="submit")
+                            | Eliminar publicación
 
                 a.btn.btn-outline-danger(
                     href=`/denuncias/publicacion/${post.postid}/comentarios`

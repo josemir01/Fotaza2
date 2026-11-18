@@ -5,6 +5,7 @@ import UserRoute from './routers/UserRoute.js';
 import PostRoute from './routers/PostRoute.js';
 import AuthRoute from './routers/AuthRoute.js'
 import ReportRoute from './routers/ReportRoute.js'
+import AdminRoute from './routers/AdminRoute.js'
 import './models/index.js'
 import { connectDatabase } from './models/index.js'
 import session from 'express-session'
@@ -45,6 +46,7 @@ app.use('/', AuthRoute)
 app.use('/usuario', UserRoute)
 app.use('/post', PostRoute)
 app.use('/denuncias', ReportRoute)
+app.use('/admin', AdminRoute)
 
 //pagina de inicio
 app.get("/", (req, res) => {

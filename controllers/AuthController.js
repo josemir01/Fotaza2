@@ -34,7 +34,8 @@ export async function loginUser(req, res) {
             userid: user.userid,
             fullName: user.fullName,
             email: user.email,
-            avatar: user.avatar
+            avatar: user.avatar,
+            rol:user.rol
         }
 
         res.redirect('/')
