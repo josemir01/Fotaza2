@@ -163,10 +163,38 @@ export async function blockPost(req, res) {
             })
         }
 
+        if (post.estadoPublicacion === 'bloqueada') {
+            return res.status(400).render('error', {
+                msg: 'Esta publicación ya está bloqueada'
+            })
+        }
+
         await post.update({
             estadoPublicacion: 'bloqueada',
             underReview: false
         })
+
+        // Contar publicaciones bloqueadas del autor
+        const publicacionesBloqueadas = await Post.count({
+            where: {
+                idUser: post.idUser,
+                estadoPublicacion: 'bloqueada'
+            }
+        })
+
+        // Si tiene 3 o más publicaciones bloqueadas,
+        // inactivar automáticamente su cuenta
+        if (publicacionesBloqueadas >= 3) {
+
+            await User.update(
+                { estadoUsuario: 'inactiva' },
+                {
+                    where: {
+                        userid: post.idUser
+                    }
+                }
+            )
+        }
 
         return res.redirect('/admin')
 

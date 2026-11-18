@@ -29,13 +29,20 @@ export async function loginUser(req, res) {
             return res.status(401).render('login', { error: 'Credenciales incorrectas' })
         }
 
+        // Verificar si el usuario está inactivo
+        if (user.estadoUsuario !== 'activa') {
+            return res.status(403).render('login', {
+                error: 'Tu cuenta fue inactivada. No podés iniciar sesión.'
+            })
+        }
+
         // Guardar usuario en sesión (sin contraseña)
         req.session.user = {
             userid: user.userid,
             fullName: user.fullName,
             email: user.email,
             avatar: user.avatar,
-            rol:user.rol
+            rol: user.rol
         }
 
         res.redirect('/')
