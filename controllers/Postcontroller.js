@@ -305,6 +305,55 @@ export async function getPosts(req, res) {
             order: [['createdAt', 'DESC']]
         })
 
+        // Calcular promedio de cada publicación
+        for (const post of posts) {
+
+            let mejorPromedio = 0
+            let esDestacada = false
+
+            for (const img of post.Images || []) {
+
+                const ratings = img.Ratings || []
+
+                if (ratings.length > 0) {
+
+                    let suma = 0
+
+                    for (const rating of ratings) {
+                        suma = suma + rating.value
+                    }
+
+                    const promedio = suma / ratings.length
+
+                    if (promedio > mejorPromedio) {
+                        mejorPromedio = promedio
+                    }
+                    if (ratings.length >= 3 && promedio > 4) {
+                        esDestacada = true
+                    }
+                }
+            }
+
+            post.mejorPromedio = mejorPromedio
+        }
+
+         // Priorizar publicaciones con promedio > 4 y mínimo 3 votos
+        posts.sort((a, b) => {
+            const destacadaA = a.esDestacada
+            const destacadaB = b.esDestacada
+
+            if (destacadaA !== destacadaB) {
+                if (destacadaA) {
+                    return -1
+                } else {
+                    return 1
+                }
+            }
+
+            return 0
+        })
+
+
         const allTags = await fetchAllHashtags()
         console.log(allTags)
         res.render('post', { posts, allTags })
@@ -379,7 +428,7 @@ export async function getPostById(req, res) {
             img.promedioRating = promedioRating
 
             // Verificar si el usuario conectado ya valoró
-            img.yaValoro = req.session.user ? ratings.some(rating => rating.idUser === req.session.user.userid): false
+            img.yaValoro = req.session.user ? ratings.some(rating => rating.idUser === req.session.user.userid) : false
         }
 
         // Verificar denuncias pendientes
