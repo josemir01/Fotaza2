@@ -191,6 +191,7 @@ export async function createComment(req, res) {
 
 // Rating
 
+
 export async function rateImage(req, res) {
 
     if (!req.session.user) {
@@ -199,29 +200,22 @@ export async function rateImage(req, res) {
 
     const postId = Number(req.params.postId)
     const imageId = Number(req.params.imageId)
-    const value = Number(req.body.value)
     const userId = req.session.user.userid
+    const value = Number(req.body.value)
 
     try {
 
-        // Buscar la publicación
-        const post = await Post.findByPk(postId)
-
-        if (!post) {
-            return res.status(404).render('error', {
-                msg: 'Publicación no encontrada'
+        // Validar valoración de 1 a 5
+        if (!Number.isInteger(value) || value < 1 || value > 5) {
+            return res.status(400).render('error', {
+                msg: 'La valoración debe ser entre 1 y 5'
             })
         }
 
-        // Verificar si la publicación está bloqueada
-        if (post.estadoPublicacion !== 'activa') {
-            return res.status(403).render('error', {
-                msg: 'No podés valorar imágenes de una publicación bloqueada'
-            })
-        }
-
-        // Buscar la imagen
-        const image = await Image.findByPk(imageId)
+        // Buscar imagen y publicación
+        const image = await Image.findByPk(imageId, {
+            include: [{ model: Post }]
+        })
 
         if (!image) {
             return res.status(404).render('error', {
@@ -236,14 +230,21 @@ export async function rateImage(req, res) {
             })
         }
 
-        // Validar valoración entre 1 y 5
-        if (!Number.isInteger(value) || value < 1 || value > 5) {
-            return res.status(400).render('error', {
-                msg: 'La valoración debe ser un número entero entre 1 y 5'
+        // No permitir valorar publicaciones bloqueadas
+        if (image.Post.estadoPublicacion === 'bloqueada') {
+            return res.status(403).render('error', {
+                msg: 'No podés valorar una publicación bloqueada'
             })
         }
 
-        // Buscar si el usuario ya valoró la imagen
+        // El autor no puede valorar sus propias imágenes
+        if (image.Post.idUser === userId) {
+            return res.status(403).render('error', {
+                msg: 'No podés valorar tus propias imágenes'
+            })
+        }
+
+        // Verificar si ya existe una valoración
         const ratingExistente = await Rating.findOne({
             where: {
                 idUser: userId,
@@ -251,27 +252,22 @@ export async function rateImage(req, res) {
             }
         })
 
-        // Actualizar valoración existente
         if (ratingExistente) {
-
-            await ratingExistente.update({
-                value
-            })
-
-        } else {
-
-            // Crear nueva valoración
-            await Rating.create({
-                value,
-                idUser: userId,
-                idImage: imageId
+            return res.status(403).render('error', {
+                msg: 'Ya valoraste esta imagen'
             })
         }
+
+        // Crear valoración
+        await Rating.create({
+            value,
+            idUser: userId,
+            idImage: imageId
+        })
 
         return res.redirect(`/post/${postId}`)
 
     } catch (error) {
-
         console.error('Error al valorar la imagen:', error)
 
         return res.status(500).render('error', {
@@ -370,15 +366,20 @@ export async function getPostById(req, res) {
         //obtiene todas las valoraciones
         for (const img of post.Images || []) {
             const ratings = img.Ratings || []
+            // Cantidad total de valoraciones
+            img.cantidadRatings = ratings.length
             let promedioRating = 0
             if (ratings.length > 0) {
                 let suma = 0
                 for (const rating of ratings) {
-                    suma = suma + rating.value
+                    suma = suma + Number(rating.value)
                 }
                 promedioRating = (suma / ratings.length).toFixed(1)
             }
             img.promedioRating = promedioRating
+
+            // Verificar si el usuario conectado ya valoró
+            img.yaValoro = req.session.user ? ratings.some(rating => rating.idUser === req.session.user.userid): false
         }
 
         // Verificar denuncias pendientes
@@ -485,7 +486,7 @@ export async function getEditPost(req, res) {
         }
 
         console.log('Autor de la publicación:', post.idUser)
-console.log('Usuario conectado:', req.session.user.userid)
+        console.log('Usuario conectado:', req.session.user.userid)
 
         // Verificar si la publicación está bloqueada
         if (post.estadoPublicacion !== 'activa') {

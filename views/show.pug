@@ -15,17 +15,18 @@ block content
 
             if tieneDenuncias
                 .alert.alert-warning.mt-3
-                    strong Publicacion bloqueada
-                    p.mb-0 Esta publicacion tiene denuncias pendientes y no puede ser modificada.
+                    strong Publicación bloqueada
+                    p.mb-0 Esta publicación tiene denuncias pendientes y no puede ser modificada.
 
             .d-flex.flex-wrap.gap-2.mb-3
+
                 if !tieneDenuncias
                     a.btn.btn-warning(
                         href=`/post/${post.postid}/editar`
                     )
-                        | Editar publicacion
+                        | Editar publicación
 
-                // ELIMINAR PUBLICACION
+                // ELIMINAR PUBLICACIÓN
                 if !tieneDenuncias && post.estadoPublicacion === 'activa'
                     form(
                         action=`/post/${post.postid}/eliminar`
@@ -40,24 +41,34 @@ block content
                 )
                     | Ver denuncias de comentarios
 
+        // IMÁGENES DE LA PUBLICACIÓN
         if post.Images && post.Images.length
+
             each img in post.Images
+
                 .card.mb-4
                     .card-body
+
                         img.img-fluid.rounded.mb-3(
                             src=img.image
                             style="max-width:300px"
                         )
 
-                        h4.mt-3 Valoracion promedio
+                        // PROMEDIO Y CANTIDAD DE VALORACIONES
+                        h4.mt-3 Valoración promedio
 
-                        if img.promedioRating && img.promedioRating > 0
-                            p ⭐ #{img.promedioRating} / 5
+                        if img.cantidadRatings > 0
+                            p.mb-1 ⭐ #{img.promedioRating} / 5
+                            p.text-muted
+                                | Cantidad de valoraciones: #{img.cantidadRatings}
                         else
-                            p Todavia no hay valoraciones
+                            p.mb-1 Todavía no hay valoraciones
+                            p.text-muted
+                                | Cantidad de valoraciones: 0
 
                         // DENUNCIAR IMAGEN
                         if user && user.userid !== post.idUser
+
                             details.mb-3
                                 summary.text-danger.small
                                     | Denunciar imagen
@@ -74,7 +85,7 @@ block content
                                         option(value="Contenido inapropiado") Contenido inapropiado
                                         option(value="Violencia") Violencia
                                         option(value="Spam") Spam
-                                        option(value="Copyright") Infraccion de copyright
+                                        option(value="Copyright") Infracción de copyright
                                         option(value="Otro") Otro
 
                                     textarea.form-control.mb-2(
@@ -87,12 +98,16 @@ block content
                                     button.btn.btn-danger.btn-sm(type="submit")
                                         | Enviar denuncia
 
+                        // COMENTARIOS
                         h4 Comentarios
 
                         if img.Comments && img.Comments.length
+
                             each comment in img.Comments
+
                                 .card.mb-2
                                     .card-body
+
                                         if comment.User
                                             strong= comment.User.fullName
 
@@ -100,6 +115,7 @@ block content
 
                                         // EDITAR Y ELIMINAR COMENTARIO
                                         if user && user.userid === comment.idUser
+
                                             form(
                                                 action=`/post/${post.postid}/imagen/${img.imageid}/comentario/${comment.Commentid}/editar`
                                                 method="POST"
@@ -111,6 +127,7 @@ block content
                                                 )= comment.content
 
                                                 .d-flex.gap-2
+
                                                     button.btn.btn-warning.btn-sm(
                                                         type="submit"
                                                     )
@@ -126,6 +143,7 @@ block content
 
                                         // DENUNCIAR COMENTARIO
                                         if user && user.userid !== comment.idUser
+
                                             details.mt-2
                                                 summary.text-danger.small
                                                     | Denunciar comentario
@@ -161,25 +179,33 @@ block content
 
                         // ABRIR Y CERRAR COMENTARIOS
                         if user && user.userid === post.idUser
+
                             form(
                                 action=`/post/${post.postid}/imagen/${img.imageid}/comentarios`
                                 method="POST"
                             )
                                 if img.comentDisable
+
                                     button.btn.btn-success.btn-sm.mb-3(
                                         type="submit"
                                     )
                                         | Abrir comentarios
+
                                 else
+
                                     button.btn.btn-secondary.btn-sm.mb-3(
                                         type="submit"
                                     )
                                         | Cerrar comentarios
 
+                        // FORMULARIO DE COMENTARIOS
                         if img.comentDisable
+
                             .alert.alert-secondary
-                                | Los comentarios estan cerrados para esta imagen
-                        else
+                                | Los comentarios están cerrados para esta imagen
+
+                        else if user
+
                             form(
                                 action=`/post/${post.postid}/imagen/${img.imageid}/comentar`
                                 method="POST"
@@ -194,22 +220,49 @@ block content
                                 button.btn.btn-primary(type="submit")
                                     | Comentar
 
+                        else
+                            p.text-muted
+                                | Iniciá sesión para comentar esta imagen.
+
+                        // VALORAR IMAGEN
                         h4.mt-4 Valorar imagen
 
-                        form(
-                            action=`/post/${post.postid}/imagen/${img.imageid}/rating`
-                            method="POST"
-                        )
-                            select.form-select(name="value")
-                                option(value="") --seleccionar valoracion--
-                                option(value="1") 1 ⭐
-                                option(value="2") 2 ⭐⭐
-                                option(value="3") 3 ⭐⭐⭐
-                                option(value="4") 4 ⭐⭐⭐⭐
-                                option(value="5") 5 ⭐⭐⭐⭐⭐
+                        if !user
 
-                            button.btn.btn-warning.mt-2(type="submit")
-                                | Valorar
+                            p.text-muted
+                                | Iniciá sesión para valorar esta imagen.
+
+                        else if user.userid === post.idUser
+
+                            p.text-muted
+                                | No podés valorar tus propias imágenes.
+
+                        else if img.yaValoro
+
+                            .alert.alert-success
+                                | Ya valoraste esta imagen.
+
+                        else
+
+                            form(
+                                action=`/post/${post.postid}/imagen/${img.imageid}/rating`
+                                method="POST"
+                            )
+                                select.form-select(
+                                    name="value"
+                                    required
+                                )
+                                    option(value="") -- Seleccionar valoración --
+                                    option(value="1") 1 ⭐
+                                    option(value="2") 2 ⭐⭐
+                                    option(value="3") 3 ⭐⭐⭐
+                                    option(value="4") 4 ⭐⭐⭐⭐
+                                    option(value="5") 5 ⭐⭐⭐⭐⭐
+
+                                button.btn.btn-warning.mt-2(
+                                    type="submit"
+                                )
+                                    | Valorar
 
         else
-            p Esta publicación no tiene imagen
+            p Esta publicación no tiene imágenes
