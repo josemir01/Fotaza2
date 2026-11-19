@@ -8,6 +8,7 @@ import ReportRoute from './routers/ReportRoute.js'
 import AdminRoute from './routers/AdminRoute.js'
 import './models/index.js'
 import { connectDatabase } from './models/index.js'
+import { checkUserActive } from './middlewares/checkUserActive.js'
 import session from 'express-session'
 const app = express()
 
@@ -28,6 +29,9 @@ app.use(session({
     resave: false,
     saveUninitialized: false
 }))
+
+// Verificar que el usuario conectado siga activo
+app.use(checkUserActive)
 
 app.use((req, res, next) => {
     res.locals.user = req.session.user || null
