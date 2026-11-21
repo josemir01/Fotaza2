@@ -7,6 +7,7 @@ import { Rating } from '../models/Rating.js'
 import { Hashtag } from '../models/Hashtag.js'
 import { User, Post, Image, Comment } from '../models/index.js'
 import { Report } from '../models/Report.js'
+import sharp from 'sharp'
 import { Op } from 'sequelize'
 
 
@@ -55,11 +56,16 @@ export async function searchPostsByHashtag(req, res) {
     if (!hashtagId) {
         return res.redirect('/post')
     }
+
     try {
         const tag = await Hashtag.findByPk(hashtagId, {
             include: [{
                 model: Post,
                 through: { attributes: [] },
+                where: {
+                    estadoPublicacion: 'activa'
+                },
+                required: false,
                 include: [
                     {
                         model: User,
@@ -67,7 +73,14 @@ export async function searchPostsByHashtag(req, res) {
                     },
                     {
                         model: Image,
-                        as: 'Images'
+                        as: 'Images',
+                        where: req.session.user ? {} : { copyright: false },
+                        required: false,
+                        include: [
+                            {
+                                model: Rating
+                            }
+                        ]
                     },
                     {
                         model: Hashtag
@@ -78,7 +91,7 @@ export async function searchPostsByHashtag(req, res) {
 
         const allTags = await fetchAllHashtags()
 
-        //si no existe el tag
+        // Si no existe el hashtag
         if (!tag) {
             return res.render('post', {
                 posts: [],
@@ -87,8 +100,13 @@ export async function searchPostsByHashtag(req, res) {
             })
         }
 
-        //si existe pero no tiene publicaciones
-        if (!tag || !tag.Posts || tag.Posts.length === 0) {
+        // Filtrar publicaciones con imágenes visibles
+        const postsVisibles = (tag.Posts || []).filter(
+            post => post.Images.length > 0
+        )
+
+        // Si no tiene publicaciones visibles
+        if (postsVisibles.length === 0) {
             return res.render('post', {
                 posts: [],
                 allTags,
@@ -96,16 +114,21 @@ export async function searchPostsByHashtag(req, res) {
             })
         }
 
-        //si existe la publicacion
+        // Mostrar publicaciones
         res.render('post', {
-            posts: tag.Posts,
-            allTags: await fetchAllHashtags()
+            posts: postsVisibles,
+            allTags
         })
+
     } catch (error) {
         console.error('Error al obtener publicaciones por hashtag:', error)
-        res.status(500).render('error', { msg: 'Error al obtener las publicaciones con ese tag' })
+
+        res.status(500).render('error', {
+            msg: 'Error al obtener las publicaciones con ese tag'
+        })
     }
 }
+
 //////////////////////////////////////////////////////////////////////////////
 
 // Comment
@@ -297,6 +320,11 @@ export async function getPosts(req, res) {
                 {
                     model: Image,
                     as: 'Images',
+                    where: req.session.user ? {} : { copyright: false },
+                    required: false,
+                    include: [{
+                        model: Rating
+                    }]
                 },
                 {
                     model: Hashtag
@@ -305,8 +333,10 @@ export async function getPosts(req, res) {
             order: [['createdAt', 'DESC']]
         })
 
+        const postsVisibles = posts.filter(post => post.Images.length > 0)
+
         // Calcular promedio de cada publicación
-        for (const post of posts) {
+        for (const post of postsVisibles) {
 
             let mejorPromedio = 0
             let esDestacada = false
@@ -335,10 +365,11 @@ export async function getPosts(req, res) {
             }
 
             post.mejorPromedio = mejorPromedio
+            post.esDestacada = esDestacada
         }
 
-         // Priorizar publicaciones con promedio > 4 y mínimo 3 votos
-        posts.sort((a, b) => {
+        // Priorizar publicaciones con promedio > 4 y mínimo 3 votos
+        postsVisibles.sort((a, b) => {
             const destacadaA = a.esDestacada
             const destacadaB = b.esDestacada
 
@@ -376,6 +407,9 @@ export async function getPostById(req, res) {
                 {
                     model: Image,
                     as: 'Images',
+                    where: req.session.user ? {} : { copyright: false },
+                    required: false,
+
                     include: [
                         {
                             model: Comment,
@@ -410,6 +444,14 @@ export async function getPostById(req, res) {
                 msg: 'Esta publicación fue bloqueada por un administrador'
             })
         }
+
+        // Verificar imágenes públicas para usuarios anónimos
+        if (!req.session.user && post.Images.length === 0) {
+            return res.status(403).render('error', {
+                msg: 'Esta publicación no tiene imágenes públicas disponibles'
+            })
+        }
+
 
         //sacar el promedio de valoraciones
         //obtiene todas las valoraciones
@@ -454,11 +496,25 @@ export async function getPostsByUserId(req, res) {
         }
 
         const posts = await Post.findAll({
-            where: { IdUser: userId },
+            where: {
+                idUser: userId,
+                estadoPublicacion: 'activa'
+            },
+            include: [
+                {
+                    model: Image,
+                    as: 'Images',
+                    where: req.session.user ? {} : { copyright: false },
+                    required: false
+                }
+            ],
             order: [['createdAt', 'DESC']]
         })
 
-        res.render('post/userPosts', { posts, user })
+                // Mostrar publicaciones con imágenes visibles
+        const postsVisibles = posts.filter(post => post.Images.length > 0)
+
+        res.render('post/userPosts', { posts:postsVisibles, user })
     } catch (error) {
         console.error('Error al obtener publicaciones del usuario:', error)
         res.status(500).render('error', { msg: 'Error al obtener las publicaciones del usuario' })
@@ -481,44 +537,132 @@ export async function getCreatePost(req, res) {
     }
 }
 
-// POST /post/crear — guardar nueva publicación
+
 export async function createPost(req, res) {
     if (!req.session.user) {
         return res.redirect('/login')
     }
+
     try {
         const { descripcion, titulo, imagenBase64, opciones } = req.body
-        //const userId = req.session.user.userid
-        const userId = req.session.user.userid             //cambiar a futuro de momento solo prueba
+        const userId = req.session.user.userid
 
-        //crear el post
+        // Recibir las imágenes con sus configuraciones
+        const imagenesArray = JSON.parse(imagenBase64 || '[]')
+
+        if (!Array.isArray(imagenesArray) || imagenesArray.length === 0) {
+            return res.status(400).render('error', {
+                msg: 'Debés seleccionar al menos una imagen'
+            })
+        }
+
+        // Crear la publicación
         const post = await Post.create({
             title: titulo,
             description: descripcion || null,
-            idUser: userId       // FK 
+            idUser: userId
         })
 
-        //recibo las imagenes en base 64 del body
-        if (imagenBase64) {
-            const imagenesArray = JSON.parse(imagenBase64)
+        // Recorrer las imágenes
+        for (const img of imagenesArray) {
 
-            for (const imgBase64 of imagenesArray) {
-                await Image.create({
-                    image: imgBase64,
-                    copyright: false,
-                    idPost: post.postid
-                })
+            let imagenFinal = img.image
+
+            const copyright = img.copyright === true
+            const watermark = copyright && img.watermark === true
+            const watermarkText = watermark
+                ? String(img.watermarkText || '').trim()
+                : ''
+
+            if (watermark) {
+
+                if (!watermarkText) {
+                    throw new Error('La marca de agua necesita un texto')
+                }
+
+                // Separar el encabezado Base64
+                const base64 = img.image.split(',')[1]
+
+                // Convertir Base64 a Buffer
+                const buffer = Buffer.from(base64, 'base64')
+
+                // Obtener dimensiones de la imagen
+                const metadata = await sharp(buffer).metadata()
+
+                const ancho = metadata.width
+                const alto = metadata.height
+
+                // Crear el texto de la marca de agua
+                const textoSeguro = watermarkText
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&apos;')
+
+                const tamañoFuente = Math.max(
+                    16,
+                    Math.min(48, Math.floor(ancho / 15))
+                )
+
+                const svg = `
+                    <svg width="${ancho}" height="${alto}">
+                        <text
+                            x="50%"
+                            y="50%"
+                            text-anchor="middle"
+                            dominant-baseline="middle"
+                            font-family="Arial"
+                            font-size="${tamañoFuente}"
+                            fill="white"
+                            fill-opacity="0.5"
+                        >${textoSeguro}</text>
+                    </svg>
+                `
+
+                // Incorporar la marca de agua
+                const imagenProcesada = await sharp(buffer)
+                    .rotate()
+                    .composite([
+                        {
+                            input: Buffer.from(svg),
+                            gravity: 'center'
+                        }
+                    ])
+                    .png()
+                    .toBuffer()
+
+                // Convertir nuevamente a Base64
+                imagenFinal = 'data:image/png;base64,' +
+                    imagenProcesada.toString('base64')
             }
+
+            // Guardar imagen
+            await Image.create({
+                image: imagenFinal,
+                copyright: copyright,
+                watermark: watermark,
+                watermarkText: watermark ? watermarkText : null,
+                idPost: post.postid
+            })
         }
+
+        // Guardar hashtags
         if (opciones) {
             await post.addHashtags(opciones)
         }
+
         res.redirect('/post')
+
     } catch (error) {
         console.error('Error al crear la publicación:', error)
-        res.status(500).render('error', { msg: 'Error al crear la publicación' })
+
+        res.status(500).render('error', {
+            msg: 'Error al crear la publicación'
+        })
     }
 }
+
 
 // GET /post/:postId/editar — mostrar formulario de edición
 export async function getEditPost(req, res) {
@@ -912,8 +1056,10 @@ export async function deleteComment(req, res) {
 
 
 
+
 export async function searchPosts(req, res) {
-    const termino = req.query.termino
+    const termino = req.query.termino || ''
+
     try {
         const posts = await Post.findAll({
             include: [
@@ -923,13 +1069,16 @@ export async function searchPosts(req, res) {
                 },
                 {
                     model: Image,
-                    as: 'Images'
+                    as: 'Images',
+                    where: req.session.user ? {} : { copyright: false },
+                    required: false
                 },
                 {
                     model: Hashtag
                 }
             ],
             where: {
+                estadoPublicacion: 'activa',
                 [Op.or]: [
                     {
                         title: {
@@ -937,7 +1086,12 @@ export async function searchPosts(req, res) {
                         }
                     },
                     {
-                        description: {
+                        User: {
+                            [Op.iLike]: `%${termino}%`
+                        }
+                    },
+                    {
+                        tag:{
                             [Op.iLike]: `%${termino}%`
                         }
                     }
@@ -946,16 +1100,20 @@ export async function searchPosts(req, res) {
             order: [['createdAt', 'DESC']]
         })
 
+        // Mostrar solamente publicaciones con imágenes visibles
+        const postsVisibles = posts.filter(post => post.Images.length > 0)
+
         const allTags = await fetchAllHashtags()
 
         res.render('post', {
-            posts,
+            posts: postsVisibles,
             allTags,
-            msg: posts.length ? null : 'No se encontraron publicaciones'
+            msg: postsVisibles.length ? null : 'No se encontraron publicaciones'
         })
 
     } catch (error) {
         console.error(error)
+
         res.status(500).render('error', {
             msg: 'Error al buscar publicaciones'
         })

@@ -1,36 +1,45 @@
 import { DataTypes, Model } from "sequelize";
 import sequelize from "../db/config.js";
 
-export class Image extends Model {}
+export class Image extends Model { }
 
 Image.init(
     {
-        imageid:{
+        imageid: {
             type: DataTypes.INTEGER,
             autoIncrement: true,
-            primaryKey:true,
-            unique:true,
-            allowNull:false,
+            primaryKey: true,
+            unique: true,
+            allowNull: false,
         },
-        image:{
+        image: {
             type: DataTypes.TEXT,
             allowNull: false,
         },
-        comentDisable:{
-            type:DataTypes.BOOLEAN,
+        comentDisable: {
+            type: DataTypes.BOOLEAN,
             allowNull: true,
         },
-        copyright:{
-            type:DataTypes.BOOLEAN,
+        copyright: {
+            type: DataTypes.BOOLEAN,
             allowNull: false,
         },
         idPost: {
             type: DataTypes.INTEGER,
             allowNull: true
         },
+        watermark: {
+            type: DataTypes.BOOLEAN,
+            allowNull: false,
+            defaultValue: false
+        },
+        watermarkText: {
+            type: DataTypes.STRING,
+            allowNull: true
+        },
     },
     {
-        sequelize, 
+        sequelize,
         modelName: 'Image',
         tableName: 'image',
         createdAt: true,
