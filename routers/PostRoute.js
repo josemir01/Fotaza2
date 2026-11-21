@@ -16,6 +16,7 @@ import{
     searchPostsByHashtag,
     rateImage,
     searchPosts,
+    getFollowingPosts
 } from '../controllers/Postcontroller.js'
 
 import { checkPostActive } from '../middlewares/checkPostActive.js'
@@ -25,6 +26,7 @@ const router=Router()
 router.get('/', getPosts)
 router.get('/crear', getCreatePost)
 router.post('/crear', createPost)
+router.get('/siguiendo', getFollowingPosts)
 router.get('/usuario/:userId', getPostsByUserId)
 router.get('/buscar', searchPostsByHashtag)
 router.get('/buscar-texto', searchPosts)

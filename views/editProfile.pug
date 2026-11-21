@@ -1,0 +1,116 @@
+
+extends layout.pug
+
+block metadata
+    title Editar perfil
+
+block content
+    .container.mt-4
+        .row.justify-content-center
+            .col-md-7
+                .card.shadow-sm
+                    .card-body.p-4
+
+                        h2.mb-4 Editar perfil
+
+                        form(
+                            action=`/usuario/${user.userid}/editar`
+                            method="POST"
+                        )
+
+                            // Foto de perfil actual
+                            .text-center.mb-4
+                                if user.avatar
+                                    img#avatarPreview.rounded-circle.border(
+                                        src=user.avatar
+                                        style="width:150px;height:150px;object-fit:cover"
+                                    )
+                                else
+                                    img#avatarPreview.rounded-circle.border(
+                                        style="width:150px;height:150px;object-fit:cover;display:none"
+                                    )
+
+                            // Seleccionar nueva foto
+                            .mb-3
+                                label.form-label(for="avatarFile") Foto de perfil
+                                input#avatarFile.form-control(
+                                    type="file"
+                                    accept="image/png,image/jpeg,image/webp"
+                                )
+                                small.text-muted Formatos JPG, PNG o WebP. Máximo 2 MB.
+
+                            // Imagen convertida a Base64
+                            input#avatar(
+                                type="hidden"
+                                name="avatar"
+                            )
+
+                            // Nombre
+                            .mb-3
+                                label.form-label(for="fullName") Nombre completo
+                                input#fullName.form-control(
+                                    type="text"
+                                    name="fullName"
+                                    value=user.fullName
+                                    required
+                                )
+
+                            // Fecha de nacimiento
+                            .mb-3
+                                label.form-label(for="birthDate") Fecha de nacimiento
+                                input#birthDate.form-control(
+                                    type="date"
+                                    name="birthDate"
+                                    value=user.birthDate ? new Date(user.birthDate).toISOString().slice(0, 10) : ''
+                                )
+
+                            // Botones
+                            .d-flex.gap-2
+                                button.btn.btn-success(
+                                    type="submit"
+                                ) Guardar cambios
+
+                                a.btn.btn-secondary(
+                                    href=`/usuario/${user.userid}`
+                                ) Cancelar
+
+    script.
+        const avatarFile = document.getElementById('avatarFile')
+        const avatarInput = document.getElementById('avatar')
+        const avatarPreview = document.getElementById('avatarPreview')
+
+        avatarFile.addEventListener('change', () => {
+            const file = avatarFile.files[0]
+
+            if (!file) {
+                return
+            }
+
+            const formatosPermitidos = [
+                'image/jpeg',
+                'image/png',
+                'image/webp'
+            ]
+
+            if (!formatosPermitidos.includes(file.type)) {
+                alert('Seleccioná una imagen JPG, PNG o WebP')
+                avatarFile.value = ''
+                return
+            }
+
+            if (file.size > 2 * 1024 * 1024) {
+                alert('La imagen no puede superar los 2 MB')
+                avatarFile.value = ''
+                return
+            }
+
+            const reader = new FileReader()
+
+            reader.onload = () => {
+                avatarInput.value = reader.result
+                avatarPreview.src = reader.result
+                avatarPreview.style.display = 'inline-block'
+            }
+
+            reader.readAsDataURL(file)
+        })

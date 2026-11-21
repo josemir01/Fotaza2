@@ -7,6 +7,7 @@ import { Rating } from '../models/Rating.js'
 import { Hashtag } from '../models/Hashtag.js'
 import { User, Post, Image, Comment } from '../models/index.js'
 import { Report } from '../models/Report.js'
+import { Follow } from '../models/Follow.js'
 import sharp from 'sharp'
 import { Op } from 'sequelize'
 
@@ -1119,3 +1120,79 @@ export async function searchPosts(req, res) {
         })
     }
 }
+
+
+
+// GET /post/siguiendo — publicaciones de usuarios que sigo
+export async function getFollowingPosts(req, res) {
+
+    // Verificar que el usuario inició sesión
+    if (!req.session.user) {
+        return res.redirect('/login')
+    }
+
+    const userId = req.session.user.userid
+
+    try {
+        // Obtener los usuarios que sigo
+        const seguidos = await Follow.findAll({
+            where: {
+                followerId: userId
+            }
+        })
+
+        // Obtener los IDs de los usuarios seguidos
+        const usuariosSeguidos = seguidos.map(
+            seguido => seguido.followingId
+        )
+
+        // Buscar las publicaciones de esos usuarios
+        const posts = await Post.findAll({
+            where: {
+                idUser: {
+                    [Op.in]: usuariosSeguidos
+                },
+                estadoPublicacion: 'activa'
+            },
+            include: [
+                {
+                    model: User,
+                    attributes: ['userid', 'fullName', 'avatar']
+                },
+                {
+                    model: Image,
+                    as: 'Images',
+                    include: [
+                        {
+                            model: Rating
+                        }
+                    ]
+                },
+                {
+                    model: Hashtag
+                }
+            ],
+            order: [['createdAt', 'DESC']]
+        })
+
+        const allTags = await fetchAllHashtags()
+
+        // Reutilizar la vista de publicaciones
+        res.render('post', {
+            posts,
+            allTags,
+            titulo: 'Publicaciones de usuarios que sigo',
+            msg: posts.length
+                ? null
+                : 'Todavía no hay publicaciones de usuarios que seguís'
+        })
+
+    } catch (error) {
+        console.error('Error al obtener publicaciones de seguidos:', error)
+
+        res.status(500).render('error', {
+            msg: 'Error al obtener las publicaciones de usuarios seguidos'
+        })
+    }
+}
+

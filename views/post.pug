@@ -4,7 +4,7 @@ extends layout.pug
 block content
 
     .container.mt-4
-        h2 Publicaciones
+        h2=titulo || 'Publicaciones'
         form(action="/post/buscar" method="GET")
             select.form-select(name="hashtagId")
                 option(value="") --buscar por hashtag--

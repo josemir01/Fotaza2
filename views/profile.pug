@@ -1,46 +1,114 @@
+
 extends layout.pug
 
 block content
     .container.mt-4
 
-        h2= user.fullName
+        // Cabecera del perfil
+        .card.shadow-sm.mb-4
+            .card-body.p-4
 
-        if user.avatar
-            img.img-fluid.rounded-circle.mb-3(
-                src=user.avatar
-                style="max-width:120px"
-            )
+                .row.align-items-center
+                    .col-md-3.text-center.mb-3.mb-md-0
 
-        hr
-
-        h4 Seguidores: #{followers.length}
-
-        if followers.length
-            each follower in followers
-                .card.mb-2
-                    .card-body
-                        if follower.avatar
-                            img.rounded-circle.me-2(
-                                src=follower.avatar
-                                style="width:40px;height:40px"
+                        if user.avatar
+                            img.rounded-circle.border(
+                                src=user.avatar
+                                alt="Foto de perfil"
+                                style="width:150px;height:150px;object-fit:cover"
                             )
-                        a(href=`/usuario/${follower.userid}`)= follower.fullName
-        else
-            p Este usuario todavía no tiene seguidores.
-
-        hr
-
-        h4 Siguiendo: #{following.length}
-
-        if following.length
-            each followed in following
-                .card.mb-2
-                    .card-body
-                        if followed.avatar
-                            img.rounded-circle.me-2(
-                                src=followed.avatar
-                                style="width:40px;height:40px"
+                        else
+                            .rounded-circle.bg-secondary.text-white.d-flex.align-items-center.justify-content-center.mx-auto(
+                                style="width:150px;height:150px;font-size:55px"
                             )
-                        a(href=`/usuario/${followed.userid}`)= followed.fullName
-        else
-            p Este usuario todavía no sigue a nadie.
+                                | #{user.fullName.charAt(0).toUpperCase()}
+
+                    .col-md-9
+
+                        h2.mb-2= user.fullName
+
+                        p.text-muted Usuario de Fotaza2
+
+                        // Estadísticas
+                        .d-flex.flex-wrap.gap-4.mt-3.mb-3
+
+                            div
+                                h4.mb-0= followers.length
+                                span.text-muted Seguidores
+
+                            div
+                                h4.mb-0= following.length
+                                span.text-muted Siguiendo
+
+                        // Editar solamente el perfil propio
+                        if locals.user && locals.user.userid
+                            // La comprobación del dueño se hará con sessionUser
+                            if sessionUser && sessionUser.userid === user.userid
+                                a.btn.btn-primary(
+                                    href=`/usuario/${user.userid}/editar`
+                                ) Editar perfil
+
+        // Seguidores y seguidos
+        .row
+
+            // Seguidores
+            .col-md-6.mb-4
+                .card.shadow-sm.h-100
+
+                    .card-header.bg-light
+                        h4.mb-0 Seguidores (#{followers.length})
+
+                    .card-body
+
+                        if followers.length
+                            each follower in followers
+                                .d-flex.align-items-center.mb-3
+
+                                    if follower.avatar
+                                        img.rounded-circle.me-3(
+                                            src=follower.avatar
+                                            style="width:45px;height:45px;object-fit:cover"
+                                        )
+                                    else
+                                        .rounded-circle.bg-secondary.text-white.d-flex.align-items-center.justify-content-center.me-3(
+                                            style="width:45px;height:45px"
+                                        )
+                                            | #{follower.fullName.charAt(0).toUpperCase()}
+
+                                    a.text-decoration-none(
+                                        href=`/usuario/${follower.userid}`
+                                    )= follower.fullName
+
+                        else
+                            p.text-muted.mb-0 Este usuario todavía no tiene seguidores.
+
+            // Siguiendo
+            .col-md-6.mb-4
+                .card.shadow-sm.h-100
+
+                    .card-header.bg-light
+                        h4.mb-0 Siguiendo (#{following.length})
+
+                    .card-body
+
+                        if following.length
+                            each followed in following
+                                .d-flex.align-items-center.mb-3
+
+                                    if followed.avatar
+                                        img.rounded-circle.me-3(
+                                            src=followed.avatar
+                                            style="width:45px;height:45px;object-fit:cover"
+                                        )
+                                    else
+                                        .rounded-circle.bg-secondary.text-white.d-flex.align-items-center.justify-content-center.me-3(
+                                            style="width:45px;height:45px"
+                                        )
+                                            | #{followed.fullName.charAt(0).toUpperCase()}
+
+                                    a.text-decoration-none(
+                                        href=`/usuario/${followed.userid}`
+                                    )= followed.fullName
+
+                        else
+                            p.text-muted.mb-0 Este usuario todavía no sigue a nadie.

@@ -49,6 +49,7 @@ export async function getUserById(req, res) {
         }
         res.render('profile', {
             user,
+            sessionUser: req.session.user || null,
             followers: user.Followers || [],
             following: user.Following || []
         })
@@ -114,7 +115,7 @@ export async function getEditUser(req, res) {
         if (!user) {
             return res.status(404).render('user/error', { msg: 'Usuario no encontrado' })
         }
-        res.render('user/edit', { user })
+        res.render('editProfile', { user })
     } catch (error) {
         console.error('Error al obtener el usuario para edición:', error)
         res.status(500).render('error', { msg: 'Error interno' })
@@ -124,22 +125,65 @@ export async function getEditUser(req, res) {
 // POST /usuario/:userId/editar — guardar cambios del perfil
 export async function updateUser(req, res) {
     const userId = Number(req.params.userId)
+
     try {
+        // Solo el dueño puede editar su perfil
         if (req.session.user?.userid !== userId) {
-            return res.status(403).render('error', { msg: 'No tenés permiso para editar este perfil' })
+            return res.status(403).render('error', {
+                msg: 'No tenés permiso para editar este perfil'
+            })
         }
 
-        const { fullName, birthDate } = req.body
+        const { fullName, birthDate, avatar } = req.body
 
-        await User.update(
-            { fullName, birthDate: birthDate || null },
-            { where: { userid: userId } }
-        )
+        const user = await User.findByPk(userId)
+
+        if (!user) {
+            return res.status(404).render('user/error', {
+                msg: 'Usuario no encontrado'
+            })
+        }
+
+        // Actualizar datos
+        user.fullName = fullName
+        user.birthDate = birthDate || null
+
+        // Actualizar avatar solamente si se seleccionó uno nuevo
+        if (avatar) {
+            // Validar que sea una imagen Base64 admitida
+            const formatoValido = /^data:image\/(jpeg|png|webp);base64,/.test(avatar)
+
+            if (!formatoValido) {
+                return res.status(400).render('error', {
+                    msg: 'Formato de imagen no permitido'
+                })
+            }
+
+            const imagenBase64 = avatar.split(',')[1]
+
+            if (Buffer.from(imagenBase64, 'base64').length > 2 * 1024 * 1024) {
+                return res.status(400).render('error', {
+                    msg: 'La imagen no puede superar los 2 MB'
+                })
+            }
+
+            user.avatar = avatar
+        }
+
+        await user.save()
+
+        // Actualizar datos de la sesión
+        req.session.user.fullName = user.fullName
+        req.session.user.avatar = user.avatar
 
         res.redirect(`/usuario/${userId}`)
+
     } catch (error) {
         console.error('Error al actualizar el usuario:', error)
-        res.status(500).render('error', { msg: 'Error al actualizar el usuario' })
+
+        res.status(500).render('error', {
+            msg: 'Error al actualizar el usuario'
+        })
     }
 }
 
