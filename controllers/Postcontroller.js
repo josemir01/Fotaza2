@@ -334,6 +334,20 @@ export async function getPosts(req, res) {
             order: [['createdAt', 'DESC']]
         })
 
+        let usuariosSeguidos = []
+
+        if (req.session.user) {
+            const seguidos = await Follow.findAll({
+                where: {
+                    followerId: req.session.user.userid
+                }
+            })
+
+            usuariosSeguidos = seguidos.map(
+                seguido => seguido.followingId
+            )
+        }
+
         const postsVisibles = posts.filter(post => post.Images.length > 0)
 
         // Calcular promedio de cada publicación
@@ -388,7 +402,7 @@ export async function getPosts(req, res) {
 
         const allTags = await fetchAllHashtags()
         console.log(allTags)
-        res.render('post', { posts, allTags })
+        res.render('post', { posts, allTags, usuariosSeguidos })
     } catch (error) {
         console.error('Error al obtener publicaciones:', error)
         res.status(500).render('error', { msg: 'Error al obtener las publicaciones' })
@@ -512,10 +526,10 @@ export async function getPostsByUserId(req, res) {
             order: [['createdAt', 'DESC']]
         })
 
-                // Mostrar publicaciones con imágenes visibles
+        // Mostrar publicaciones con imágenes visibles
         const postsVisibles = posts.filter(post => post.Images.length > 0)
 
-        res.render('post/userPosts', { posts:postsVisibles, user })
+        res.render('post/userPosts', { posts: postsVisibles, user })
     } catch (error) {
         console.error('Error al obtener publicaciones del usuario:', error)
         res.status(500).render('error', { msg: 'Error al obtener las publicaciones del usuario' })
@@ -1057,7 +1071,7 @@ export async function deleteComment(req, res) {
 
 
 
-
+//busqueda por titulo,usuario y tag
 export async function searchPosts(req, res) {
     const termino = req.query.termino || ''
 
@@ -1086,16 +1100,6 @@ export async function searchPosts(req, res) {
                             [Op.iLike]: `%${termino}%`
                         }
                     },
-                    {
-                        User: {
-                            [Op.iLike]: `%${termino}%`
-                        }
-                    },
-                    {
-                        tag:{
-                            [Op.iLike]: `%${termino}%`
-                        }
-                    }
                 ]
             },
             order: [['createdAt', 'DESC']]
@@ -1106,9 +1110,24 @@ export async function searchPosts(req, res) {
 
         const allTags = await fetchAllHashtags()
 
+        let usuariosSeguidos = []
+
+        if (req.session.user) {
+            const seguidos = await Follow.findAll({
+                where: {
+                    followerId: req.session.user.userid
+                }
+            })
+
+            usuariosSeguidos = seguidos.map(
+                seguido => seguido.followingId
+            )
+        }
+
         res.render('post', {
             posts: postsVisibles,
             allTags,
+            usuariosSeguidos,
             msg: postsVisibles.length ? null : 'No se encontraron publicaciones'
         })
 
@@ -1182,6 +1201,7 @@ export async function getFollowingPosts(req, res) {
             posts,
             allTags,
             titulo: 'Publicaciones de usuarios que sigo',
+            usuariosSeguidos,
             msg: posts.length
                 ? null
                 : 'Todavía no hay publicaciones de usuarios que seguís'

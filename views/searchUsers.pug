@@ -1,0 +1,28 @@
+
+extends layout.pug
+
+block content
+    .container.mt-4
+        h2 Buscar usuarios
+
+        form(action="/usuario/buscar" method="GET")
+            input.form-control(
+                type="text"
+                name="termino"
+                placeholder="Buscar por nombre"
+                value=termino
+            )
+            button.btn.btn-primary.mt-2(type="submit")
+                | Buscar
+
+        if users && users.length
+            each usuario in users
+                .card.mt-3
+                    .card-body
+                        h5= usuario.fullName
+                        a.btn.btn-primary.btn-sm(
+                            href=`/usuario/${usuario.userid}`
+                        )
+                            | Ver perfil
+        else if termino
+            p.mt-3 No se encontraron usuarios

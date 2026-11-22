@@ -4,7 +4,8 @@ extends layout.pug
 block content
 
     .container.mt-4
-        h2=titulo || 'Publicaciones'
+        h2= titulo || 'Publicaciones'
+
         form(action="/post/buscar" method="GET")
             select.form-select(name="hashtagId")
                 option(value="") --buscar por hashtag--
@@ -13,11 +14,14 @@ block content
                         option(value=tag.hashtagid)= tag.name
                 else
                     option(disabled) no hay hashtags
+
             button.btn.btn-primary.mt-2(type="submit")
                 | buscar
+
         if msg
             .alert.alert-warning.mt-3
                 = msg
+
         if posts && posts.length
             each post in posts
                 .card.mb-3
@@ -29,14 +33,27 @@ block content
                                     href=`/usuario/${post.User.userid}`
                                 )
                                     = post.User.fullName
-                            form(
-                                action=`/usuario/${post.User.userid}/seguir`
-                                method="POST"
-                            )
-                                button.btn.btn-sm.btn-primary(type="submit")
-                                    | Seguir
+
+                            // Botón Seguir / Dejar de seguir
+                            if user && user.userid !== post.idUser
+                                if usuariosSeguidos && usuariosSeguidos.includes(post.idUser)
+                                    form(
+                                        action=`/usuario/${post.idUser}/dejarDeseguir`
+                                        method="POST"
+                                    )
+                                        button.btn.btn-sm.btn-danger(type="submit")
+                                            | Dejar de seguir
+                                else
+                                    form(
+                                        action=`/usuario/${post.idUser}/seguir`
+                                        method="POST"
+                                    )
+                                        button.btn.btn-sm.btn-primary(type="submit")
+                                            | Seguir
+
                         h5= post.title
                         p= post.description
+
                         if post.Images && post.Images.length
                             .carousel.slide(id=`carouselPost${post.postid}`)
                                 .carousel-inner
@@ -46,6 +63,7 @@ block content
                                                 src=img.image,
                                                 style="height:400px; object-fit:contain; background:#000;"
                                             )
+
                                 if post.Images.length > 1
                                     button.carousel-control-prev(
                                         type="button"
@@ -53,17 +71,20 @@ block content
                                         data-bs-slide="prev"
                                     )
                                         span.carousel-control-prev-icon
+
                                     button.carousel-control-next(
                                         type="button"
                                         data-bs-target=`#carouselPost${post.postid}`
                                         data-bs-slide="next"
                                     )
                                         span.carousel-control-next-icon
+
                         if post.Hashtags && post.Hashtags.length
                             .mt-2
                                 each tag in post.Hashtags
                                     span.badge.bg-primary.me-2
                                         | #{tag.name}
+
                         .mt-1
                             a.btn.btn-primary.mt-2(
                                 href=`/post/${post.postid}`

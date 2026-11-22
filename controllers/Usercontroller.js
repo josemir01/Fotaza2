@@ -1,6 +1,7 @@
 import { Model } from 'sequelize'
 import { User } from '../models/User.js'
 import { Follow } from '../models/Follow.js'
+import { Op } from 'sequelize'
 import bcrypt from 'bcrypt'
 
 
@@ -219,5 +220,65 @@ export async function followUser(req, res) {
     } catch (error) {
         console.error('Error al seguir al usuario:', error)
         res.status(500).render('error', { msg: 'Error al seguir al usuario' })
+    }
+}
+
+
+// POST /usuario/:userId/dejar-seguir
+export async function unfollowUser(req, res) {
+    if (!req.session.user) {
+        return res.redirect('/login')
+    }
+
+    const followerId = req.session.user.userid
+    const followingId = Number(req.params.userId)
+
+    try {
+        await Follow.destroy({
+            where: {
+                followerId,
+                followingId
+            }
+        })
+
+        res.redirect('/post')
+
+    } catch (error) {
+        console.error('Error al dejar de seguir:', error)
+        res.status(500).render('error', {
+            msg: 'Error al dejar de seguir al usuario'
+        })
+    }
+}
+
+
+
+export async function searchUsers(req, res) {
+    const termino = req.query.termino || ''
+    if (!termino.trim()) {
+        return res.render('searchUsers', {
+            users: [],
+            termino
+        })
+    }
+
+    try {
+        const users = await User.findAll({
+            where: {
+                fullName: {
+                    [Op.iLike]: `%${termino}%`
+                }
+            },
+            attributes: ['userid', 'fullName', 'avatar']
+        })
+
+        res.render('searchUsers', {
+            users,
+            termino
+        })
+
+    } catch (error) {
+        console.error(error)
+        res.status(500).send('Error al buscar usuarios')
     }
 }
