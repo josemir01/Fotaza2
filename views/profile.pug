@@ -40,13 +40,16 @@ block content
                                 h4.mb-0= following.length
                                 span.text-muted Siguiendo
 
-                        // Editar solamente el perfil propio
-                        if locals.user && locals.user.userid
-                            // La comprobación del dueño se hará con sessionUser
-                            if sessionUser && sessionUser.userid === user.userid
+                        // Opciones del perfil propio
+                        if sessionUser && sessionUser.userid === user.userid
+                            .d-flex.gap-2
                                 a.btn.btn-primary(
                                     href=`/usuario/${user.userid}/editar`
                                 ) Editar perfil
+
+                                a.btn.btn-outline-primary(
+                                    href="/colecciones"
+                                ) Mis colecciones
 
         // Seguidores y seguidos
         .row

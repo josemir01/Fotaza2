@@ -1,0 +1,57 @@
+
+extends layout.pug
+
+block content
+    .container.mt-4
+        h2 Mis colecciones
+
+        // Formulario para crear colecciones
+        .card.mb-4
+            .card-body
+                h5 Crear nueva colección
+
+                form(action="/colecciones/crear" method="POST")
+                    .mb-3
+                        label.form-label Nombre
+                        input.form-control(
+                            type="text"
+                            name="name"
+                            required
+                        )
+
+                    .mb-3
+                        label.form-label Descripción
+                        textarea.form-control(
+                            name="description"
+                            rows="3"
+                        )
+
+                    .form-check.mb-3
+                        input.form-check-input(
+                            type="checkbox"
+                            name="isPrivate"
+                            id="isPrivate"
+                        )
+                        label.form-check-label(for="isPrivate")
+                            | Colección privada
+
+                    button.btn.btn-primary(type="submit")
+                        | Crear colección
+
+        // Listado de colecciones
+        h4 Mis colecciones guardadas
+
+        if collections && collections.length
+            each collection in collections
+                .card.mb-3
+                    .card-body
+                        h5= collection.name
+                        p= collection.description
+
+                        if collection.isPrivate
+                            span.badge.bg-secondary Privada
+                        else
+                            span.badge.bg-success Pública
+
+        else
+            p Todavía no creaste ninguna colección.

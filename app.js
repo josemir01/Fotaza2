@@ -6,6 +6,7 @@ import PostRoute from './routers/PostRoute.js';
 import AuthRoute from './routers/AuthRoute.js'
 import ReportRoute from './routers/ReportRoute.js'
 import AdminRoute from './routers/AdminRoute.js'
+import CollectionRoute from './routers/CollectionRoute.js'
 import './models/index.js'
 import { connectDatabase } from './models/index.js'
 import { checkUserActive } from './middlewares/checkUserActive.js'
@@ -51,6 +52,7 @@ app.use('/usuario', UserRoute)
 app.use('/post', PostRoute)
 app.use('/denuncias', ReportRoute)
 app.use('/admin', AdminRoute)
+app.use('/colecciones',CollectionRoute)
 
 //pagina de inicio
 app.get("/", (req, res) => {

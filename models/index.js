@@ -78,8 +78,17 @@ User.hasMany(Collection, { foreignKey: 'idUser' })
 Collection.belongsTo(User, { foreignKey: 'idUser' })
 
 //collections tiene una relacion de (n:m) con publicacion
-Collection.belongsToMany(Post, { through: 'SavedPosts' })
-Post.belongsToMany(Collection, { through: 'SavedPosts' })
+Collection.belongsToMany(Post, {
+    through: 'SavedPosts',
+    foreignKey: 'idCollection',
+    otherKey: 'idPost'
+})
+
+Post.belongsToMany(Collection, {
+    through: 'SavedPosts',
+    foreignKey: 'idPost',
+    otherKey: 'idCollection'
+})
 
 //esta relacion es de muchos a muchos
 //publicaciones y hashtags (n:m)
