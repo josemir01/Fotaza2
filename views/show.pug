@@ -10,6 +10,37 @@ block content
         if post.description
             p= post.description
 
+        // GUARDAR PUBLICACIÓN EN COLECCIÓN
+        if user
+            .card.mb-4
+                .card-body
+                    h5 Guardar en colección
+
+                    if collections && collections.length
+                        form(
+                            action=`/colecciones/guardar/${post.postid}`
+                            method="POST"
+                        )
+                            select.form-select.mb-2(
+                                name="idCollection"
+                                required
+                            )
+                                option(value="") -- Seleccionar colección --
+
+                                each collection in collections
+                                    option(value=collection.id)= collection.name
+
+                            button.btn.btn-primary(type="submit")
+                                | Guardar publicación
+
+                    else
+                        p.text-muted Todavía no creaste ninguna colección.
+
+                        a.btn.btn-outline-primary(
+                            href="/colecciones"
+                        )
+                            | Crear colección
+
         // EDITAR, ELIMINAR Y VER DENUNCIAS
         if user && user.userid === post.idUser
 
@@ -169,9 +200,7 @@ block content
                                                         required
                                                     )
 
-                                                    button.btn.btn-danger.btn-sm(
-                                                        type="submit"
-                                                    )
+                                                    button.btn.btn-danger.btn-sm(type="submit")
                                                         | Enviar denuncia
 
                         else

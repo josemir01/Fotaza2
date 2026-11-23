@@ -8,6 +8,7 @@ import { Hashtag } from '../models/Hashtag.js'
 import { User, Post, Image, Comment } from '../models/index.js'
 import { Report } from '../models/Report.js'
 import { Follow } from '../models/Follow.js'
+import { Collection } from '../models/Collection.js'
 import sharp from 'sharp'
 import { Op } from 'sequelize'
 
@@ -490,7 +491,18 @@ export async function getPostById(req, res) {
 
         // Verificar denuncias pendientes
         const tieneDenuncias = await postTieneDenuncias(postId)
-        res.render('show', { post, tieneDenuncias })
+        
+        // Obtener las colecciones del usuario conectado
+        let collections = []
+
+        if (req.session.user) {
+            collections = await Collection.findAll({
+                where: {
+                    idUser: req.session.user.userid
+                }
+            })
+        }
+        res.render('show', { post, tieneDenuncias, collections })
     } catch (error) {
         console.error('ERROR COMPLETO:', error)
         res.status(500).render('error', { msg: 'Error interno al obtener la publicación' })

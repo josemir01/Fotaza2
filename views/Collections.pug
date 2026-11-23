@@ -38,6 +38,7 @@ block content
                     button.btn.btn-primary(type="submit")
                         | Crear colección
 
+
         // Listado de colecciones
         h4 Mis colecciones guardadas
 
@@ -53,5 +54,13 @@ block content
                         else
                             span.badge.bg-success Pública
 
+                        // BOTÓN PARA VER PUBLICACIONES
+                        .mt-3
+                            a.btn.btn-primary(
+                                href=`/colecciones/${collection.id}`
+                            )
+                                | Ver publicaciones
+
         else
             p Todavía no creaste ninguna colección.
+

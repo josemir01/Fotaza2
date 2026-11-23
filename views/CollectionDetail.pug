@@ -1,0 +1,53 @@
+
+extends layout.pug
+
+block content
+
+    .container.mt-4
+
+        a.btn.btn-outline-secondary.mb-3(
+            href="/colecciones"
+        )
+            | Volver a mis colecciones
+
+        h2= collection.name
+
+        if collection.description
+            p.text-muted= collection.description
+
+        if collection.isPrivate
+            span.badge.bg-secondary.mb-3 Privada
+        else
+            span.badge.bg-success.mb-3 Pública
+
+        hr
+
+        h4 Publicaciones guardadas
+
+        if collection.Posts && collection.Posts.length
+
+            .row
+                each post in collection.Posts
+
+                    .col-md-4.mb-4
+                        .card.h-100
+
+                            if post.Images && post.Images.length
+                                img.card-img-top(
+                                    src=post.Images[0].image
+                                    style="height:200px; object-fit:cover;"
+                                )
+
+                            .card-body
+                                h5.card-title= post.title
+
+                                if post.description
+                                    p.card-text= post.description
+
+                                a.btn.btn-primary(
+                                    href=`/post/${post.postid}`
+                                )
+                                    | Ver publicación
+
+        else
+            p.text-muted Todavía no guardaste publicaciones en esta colección.
