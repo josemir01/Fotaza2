@@ -145,3 +145,59 @@ export async function getCollectionById(req, res) {
     }
 }
 
+
+
+export async function removePostFromCollection(req, res) {
+    if (!req.session.user) {
+        return res.redirect('/login')
+    }
+
+    const idCollection = Number(req.params.id)
+    const postId = Number(req.params.postId)
+    const idUser = req.session.user.userid
+
+    if (!Number.isInteger(idCollection) || idCollection <= 0 ||
+        !Number.isInteger(postId) || postId <= 0) {
+        return res.status(400).send('ID inválido')
+    }
+
+    try {
+        // Verificar que la colección pertenezca al usuario
+        const collection = await Collection.findOne({
+            where: {
+                id: idCollection,
+                idUser: idUser
+            }
+        })
+
+        if (!collection) {
+            return res.status(404).send('Colección no encontrada')
+        }
+
+        // Buscar la publicación
+        const post = await Post.findByPk(postId)
+
+        if (!post) {
+            return res.status(404).send('Publicación no encontrada')
+        }
+
+        // Verificar si está guardada en la colección
+        const guardada = await collection.hasPost(post)
+
+        if (!guardada) {
+            return res.status(404).send('La publicación no está en esta colección')
+        }
+
+        // Eliminar la relación en SavedPosts
+        await collection.removePost(post)
+
+        // Volver al detalle de la colección
+        res.redirect(`/colecciones/${idCollection}`)
+
+    } catch (error) {
+        console.error(error)
+        res.status(500).send('Error al quitar la publicación')
+    }
+}
+
+

@@ -44,10 +44,21 @@ block content
                                 if post.description
                                     p.card-text= post.description
 
-                                a.btn.btn-primary(
-                                    href=`/post/${post.postid}`
-                                )
-                                    | Ver publicación
+                                .d-flex.flex-wrap.gap-2
+
+                                    a.btn.btn-primary(
+                                        href=`/post/${post.postid}`
+                                    )
+                                        | Ver publicación
+
+                                    // QUITAR PUBLICACIÓN DE LA COLECCIÓN
+                                    form(
+                                        action=`/colecciones/${collection.id}/quitar/${post.postid}`
+                                        method="POST"
+                                        onsubmit="return confirm('¿Querés quitar esta publicación de la colección?')"
+                                    )
+                                        button.btn.btn-danger(type="submit")
+                                            | Quitar de colección
 
         else
             p.text-muted Todavía no guardaste publicaciones en esta colección.

@@ -4,7 +4,8 @@ import{
     getCollections,
     createCollection,
     savePostToCollection,
-    getCollectionById
+    getCollectionById,
+    removePostFromCollection
 }from "../controllers/CollectionController.js";
 
 const router=Router()
@@ -13,6 +14,8 @@ const router=Router()
 router.get('/', getCollections)
 router.post('/crear', createCollection)
 router.post('/guardar/:postId', savePostToCollection)
+router.post('/:id/quitar/:postId',removePostFromCollection)
 router.get('/:id',getCollectionById)
+
 
 export default router
