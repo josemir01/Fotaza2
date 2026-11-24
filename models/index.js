@@ -10,6 +10,7 @@ import { Hashtag } from "./Hashtag.js"
 import { Collection } from "./Collection.js"
 import { Conversation } from "./Conversation.js"
 import { Message } from "./Message.js"
+import { Notification } from "./Notification.js"
 import sequelize from "../db/config.js"
 import { seed } from "../Seeders/seed.js"
 
@@ -130,7 +131,21 @@ Message.belongsTo(Conversation, { foreignKey: 'idConversation'})
 User.hasMany(Message, { foreignKey: 'idSender', as: 'SentMessages'})
 Message.belongsTo(User, { foreignKey: 'idSender',  as: 'Sender'})
 
+// Un usuario puede recibir muchas notificaciones (1:n)
+User.hasMany(Notification, {foreignKey: 'idReceiver', as: 'ReceivedNotifications'})
+Notification.belongsTo(User, {foreignKey: 'idReceiver', as: 'Receiver'})
 
+// Un usuario puede generar muchas notificaciones (1:n)
+User.hasMany(Notification, {foreignKey: 'idSender', as: 'SentNotifications'})
+Notification.belongsTo(User, {foreignKey: 'idSender', as: 'Sender'})
+
+// Una publicación puede tener muchas notificaciones (1:n)
+Post.hasMany(Notification, {foreignKey: 'idPost'})
+Notification.belongsTo(Post, {foreignKey: 'idPost'})
+
+// Una imagen puede tener muchas notificaciones (1:n)
+Image.hasMany(Notification, {foreignKey: 'idImage'})
+Notification.belongsTo(Image, {foreignKey: 'idImage'})
 
 export async function connectDatabase() {
     try {

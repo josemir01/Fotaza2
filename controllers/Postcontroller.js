@@ -9,6 +9,7 @@ import { User, Post, Image, Comment } from '../models/index.js'
 import { Report } from '../models/Report.js'
 import { Follow } from '../models/Follow.js'
 import { Collection } from '../models/Collection.js'
+import { createNotification } from './NotificationController.js'
 import sharp from 'sharp'
 import { Op } from 'sequelize'
 
@@ -199,6 +200,16 @@ export async function createComment(req, res) {
             idImage: imageId
         })
 
+        // Crear notificación para el autor
+        await createNotification(
+            'comment',
+            userId,
+            post.idUser,
+            postId,
+            imageId
+        )
+
+
         return res.redirect(`/post/${postId}`)
 
     } catch (error) {
@@ -283,12 +294,24 @@ export async function rateImage(req, res) {
             })
         }
 
+        
+
         // Crear valoración
         await Rating.create({
             value,
             idUser: userId,
             idImage: imageId
         })
+        
+        // Crear notificación para el autor
+        await createNotification(
+            'rating',
+            userId,
+            image.Post.idUser,
+            postId,
+            imageId
+        )
+
 
         return res.redirect(`/post/${postId}`)
 
@@ -491,7 +514,7 @@ export async function getPostById(req, res) {
 
         // Verificar denuncias pendientes
         const tieneDenuncias = await postTieneDenuncias(postId)
-        
+
         // Obtener las colecciones del usuario conectado
         let collections = []
 

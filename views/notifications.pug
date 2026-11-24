@@ -1,0 +1,71 @@
+extends layout
+
+block content
+    .container.mt-4
+        h2.mb-4 Notificaciones
+
+        if notifications.length === 0
+            .alert.alert-info
+                | No tenés notificaciones.
+
+        else
+            each notification in notifications
+
+                .card.mb-3
+                    .card-body
+                        .d-flex.align-items-center.gap-3
+
+                            // Avatar del usuario
+                            if notification.Sender.avatar
+                                img.rounded-circle(
+                                    src=notification.Sender.avatar
+                                    width="50"
+                                    height="50"
+                                    style="object-fit: cover;"
+                                )
+
+                            .flex-grow-1
+
+                                // Nombre del usuario
+                                a.fw-bold.text-decoration-none(
+                                    href=`/usuario/${notification.Sender.userid}`
+                                )= notification.Sender.fullName
+
+                                // Tipo de notificación
+                                if notification.type === 'comment'
+                                    |  comentó una imagen de tu publicación.
+
+                                else if notification.type === 'rating'
+                                    |  valoró una de tus imágenes.
+
+                                else if notification.type === 'interest'
+                                    |  está interesado en adquirir una de tus imágenes.
+
+                                else if notification.type === 'follow'
+                                    |  comenzó a seguirte.
+
+                                // Fecha de la notificación
+                                p.text-muted.small.mb-2
+                                    = new Date(notification.createdAt).toLocaleString('es-AR')
+
+                                // Enlace a la publicación
+                                if notification.Post
+                                    a.btn.btn-sm.btn-outline-primary(
+                                        href=`/post/${notification.Post.postid}`
+                                    ) Ver publicación
+
+                            // Estado de la notificación
+                            if notification.isRead
+                                span.badge.bg-secondary Leída
+
+                            else
+                                .d-flex.flex-column.gap-2
+                                    span.badge.bg-primary Nueva
+
+                                    form(
+                                        action=`/notificaciones/${notification.notificationid}/leer`
+                                        method="POST"
+                                    )
+                                        button.btn.btn-sm.btn-outline-success(
+                                            type="submit"
+                                        ) Marcar como leída

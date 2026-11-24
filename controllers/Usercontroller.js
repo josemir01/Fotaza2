@@ -1,6 +1,7 @@
 import { Model } from 'sequelize'
 import { User } from '../models/User.js'
 import { Follow } from '../models/Follow.js'
+import { createNotification } from './NotificationController.js'
 import { Op } from 'sequelize'
 import bcrypt from 'bcrypt'
 
@@ -215,7 +216,15 @@ export async function followUser(req, res) {
                 followerId,
                 followingId
             })
+            // Crear notificación
+            await createNotification(
+                'follow',
+                followerId,
+                followingId
+            )
         }
+
+
         res.redirect('/post')
     } catch (error) {
         console.error('Error al seguir al usuario:', error)

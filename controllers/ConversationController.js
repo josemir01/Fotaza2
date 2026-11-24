@@ -3,6 +3,7 @@ import { Message } from '../models/Message.js'
 import { User } from '../models/User.js'
 import { Image } from '../models/Image.js'
 import { Post } from '../models/Post.js'
+import { createNotification } from './NotificationController.js'
 import { Op } from 'sequelize'
 
 
@@ -58,6 +59,18 @@ export async function createConversation(req, res) {
                 idAuthor: idAuthor
             }
         })
+
+
+        // Crear notificación si se inició una nueva conversación
+        if (created) {
+            await createNotification(
+                'interest',
+                idBuyer,
+                idAuthor,
+                image.Post.postid,
+                idImage
+            )
+        }
 
         // Redirigir a la conversación
         res.redirect(`/conversaciones/${conversation.conversationid}`)
