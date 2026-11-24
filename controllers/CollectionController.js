@@ -1,6 +1,7 @@
 import { Post } from '../models/Post.js'
 import { Collection } from '../models/Collection.js'
 import { Image } from '../models/Image.js'
+import { Op } from 'sequelize'
 
 // Crear una colección
 export async function createCollection(req, res) {
@@ -112,15 +113,22 @@ export async function getCollectionById(req, res) {
     }
 
     try {
-        // Buscar la colección del usuario conectado
+        // Buscar una colección propia o pública
         const collection = await Collection.findOne({
             where: {
                 id: idCollection,
-                idUser: idUser
+                [Op.or]: [
+                    { idUser: idUser },
+                    { isPrivate: false }
+                ]
             },
             include: [
                 {
                     model: Post,
+                    where: {
+                        estadoPublicacion: 'activa'
+                    },
+                    required: false,
                     through: { attributes: [] },
                     include: [
                         {
@@ -135,8 +143,12 @@ export async function getCollectionById(req, res) {
             return res.status(404).send('Colección no encontrada')
         }
 
+        // Verificar si el usuario es el propietario
+        const esPropietario = collection.idUser === idUser
+
         res.render('CollectionDetail', {
-            collection
+            collection,
+            esPropietario
         })
 
     } catch (error) {

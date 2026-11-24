@@ -1,6 +1,7 @@
 import { Model } from 'sequelize'
 import { User } from '../models/User.js'
 import { Follow } from '../models/Follow.js'
+import { Collection } from '../models/Collection.js'
 import { createNotification } from './NotificationController.js'
 import { Op } from 'sequelize'
 import bcrypt from 'bcrypt'
@@ -49,11 +50,20 @@ export async function getUserById(req, res) {
         if (!user) {
             return res.status(404).render('user/error', { msg: 'Usuario no encontrado' })
         }
+        // Obtener las colecciones públicas del usuario
+        const publicCollections = await Collection.findAll({
+            where: {
+                idUser: userId,
+                isPrivate: false
+            }
+        })
+
         res.render('profile', {
             user,
             sessionUser: req.session.user || null,
             followers: user.Followers || [],
-            following: user.Following || []
+            following: user.Following || [],
+            publicCollections
         })
     } catch (error) {
         console.error('Error al obtener el usuario:', error)

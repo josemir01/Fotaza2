@@ -1,14 +1,19 @@
-
 extends layout.pug
 
 block content
 
     .container.mt-4
 
-        a.btn.btn-outline-secondary.mb-3(
-            href="/colecciones"
-        )
-            | Volver a mis colecciones
+        if esPropietario
+            a.btn.btn-outline-secondary.mb-3(
+                href="/colecciones"
+            )
+                | Volver a mis colecciones
+        else
+            a.btn.btn-outline-secondary.mb-3(
+                href=`/usuario/${collection.idUser}`
+            )
+                | Volver al perfil
 
         h2= collection.name
 
@@ -51,14 +56,15 @@ block content
                                     )
                                         | Ver publicación
 
-                                    // QUITAR PUBLICACIÓN DE LA COLECCIÓN
-                                    form(
-                                        action=`/colecciones/${collection.id}/quitar/${post.postid}`
-                                        method="POST"
-                                        onsubmit="return confirm('¿Querés quitar esta publicación de la colección?')"
-                                    )
-                                        button.btn.btn-danger(type="submit")
-                                            | Quitar de colección
+                                    // SOLO EL PROPIETARIO PUEDE QUITAR
+                                    if esPropietario
+                                        form(
+                                            action=`/colecciones/${collection.id}/quitar/${post.postid}`
+                                            method="POST"
+                                            onsubmit="return confirm('¿Querés quitar esta publicación de la colección?')"
+                                        )
+                                            button.btn.btn-danger(type="submit")
+                                                | Quitar de colección
 
         else
-            p.text-muted Todavía no guardaste publicaciones en esta colección.
+            p.text-muted Esta colección todavía no contiene publicaciones.
