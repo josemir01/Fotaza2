@@ -8,6 +8,8 @@ import { Image } from "./Image.js"
 import { Report } from "./Report.js"
 import { Hashtag } from "./Hashtag.js"
 import { Collection } from "./Collection.js"
+import { Conversation } from "./Conversation.js"
+import { Message } from "./Message.js"
 import sequelize from "../db/config.js"
 import { seed } from "../Seeders/seed.js"
 
@@ -107,6 +109,26 @@ Report.belongsTo(Comment, {foreignKey: 'idComment',as: 'ReportedComment'})
 User.hasMany(Report, {foreignKey: 'idUser',as: 'ReportsMade'})
 Report.belongsTo(User, {foreignKey: 'idUser',as: 'Reporter'})
 
+
+// Un usuario puede iniciar muchas conversaciones como comprador (1:n)
+User.hasMany(Conversation, {foreignKey: 'idBuyer',as: 'BuyerConversations'})
+Conversation.belongsTo(User, { foreignKey: 'idBuyer', as: 'Buyer'})
+
+// Un usuario puede recibir muchas conversaciones como autor (1:n)
+User.hasMany(Conversation, {foreignKey: 'idAuthor',as: 'AuthorConversations'})
+Conversation.belongsTo(User, {foreignKey: 'idAuthor',as: 'Author'})
+
+// Una imagen puede tener muchas conversaciones (1:n)
+Image.hasMany(Conversation, {foreignKey: 'idImage'})
+Conversation.belongsTo(Image, { foreignKey: 'idImage'})
+
+// Una conversación puede tener muchos mensajes (1:n)
+Conversation.hasMany(Message, { foreignKey: 'idConversation'})
+Message.belongsTo(Conversation, { foreignKey: 'idConversation'})
+
+// Un usuario puede enviar muchos mensajes (1:n)
+User.hasMany(Message, { foreignKey: 'idSender', as: 'SentMessages'})
+Message.belongsTo(User, { foreignKey: 'idSender',  as: 'Sender'})
 
 
 

@@ -1,7 +1,7 @@
 import { DataTypes, Model } from "sequelize";
 import sequelize from "../db/config.js";
 
-export class Conversation extends Model {}
+export class Conversation extends Model { }
 
 
 //id de usuario comprador
@@ -10,14 +10,29 @@ export class Conversation extends Model {}
 
 Conversation.init(
     {
-        conversationid:{
+        conversationid: {
             type: DataTypes.INTEGER,
-            autoIncrement:true,
-            allowNull:false,
+            primaryKey: true,
+            autoIncrement: true,
+            allowNull: false,
+        },
+        idBuyer: {
+            type: DataTypes.INTEGER,
+            allowNull: false,
+        },
+
+        idAuthor: {
+            type: DataTypes.INTEGER,
+            allowNull: false,
+        },
+
+        idImage: {
+            type: DataTypes.INTEGER,
+            allowNull: false,
         },
     },
     {
-        sequelize, 
+        sequelize,
         modelName: 'Conversation',
         tableName: 'conversation',
         createdAt: true,
