@@ -85,6 +85,15 @@ block content
                             style="max-width:300px"
                         )
 
+                        // REGISTRAR INTERÉS EN LA IMAGEN
+                        if user && user.userid !== post.idUser
+                            form.mb-3(
+                                action=`/conversaciones/crear/${img.imageid}`
+                                method="POST"
+                            )
+                                button.btn.btn-success(type="submit")
+                                    | Me interesa
+
                         // PROMEDIO Y CANTIDAD DE VALORACIONES
                         h4.mt-3 Valoración promedio
 
@@ -200,7 +209,9 @@ block content
                                                         required
                                                     )
 
-                                                    button.btn.btn-danger.btn-sm(type="submit")
+                                                    button.btn.btn-danger.btn-sm(
+                                                        type="submit"
+                                                    )
                                                         | Enviar denuncia
 
                         else

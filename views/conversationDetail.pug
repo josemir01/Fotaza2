@@ -1,0 +1,119 @@
+
+extends layout.pug
+
+block content
+
+    .container.mt-4
+
+        a.btn.btn-secondary.mb-3(href="/conversaciones")
+            | Volver a mis conversaciones
+
+        .card
+
+            // INFORMACIÓN DEL OTRO USUARIO
+            .card-header
+
+                .d-flex.align-items-center.gap-3
+
+                    if otherUser.avatar
+                        img.rounded-circle(
+                            src=otherUser.avatar
+                            style="width:50px;height:50px;object-fit:cover"
+                        )
+
+                    div
+                        h5.mb-1= otherUser.fullName
+
+                        a(href=`/usuario/${otherUser.userid}`)
+                            | Ver perfil
+
+            // IMAGEN DE INTERÉS
+            .card-body.border-bottom
+
+                if conversation.Image
+
+                    .d-flex.align-items-center.gap-3
+
+                        img.rounded(
+                            src=conversation.Image.image
+                            style="max-width:100px"
+                        )
+
+                        div
+                            h6 Imagen de interés
+
+                            if conversation.Image.Post
+
+                                p.mb-1= conversation.Image.Post.title
+
+                                a(
+                                    href=`/post/${conversation.Image.Post.postid}`
+                                )
+                                    | Ver publicación
+
+            
+            // MENSAJES DE LA CONVERSACIÓN
+            .card-body(
+                style="min-height:300px;max-height:500px;overflow-y:auto"
+            )
+
+                if messages && messages.length
+
+                    each message in messages
+
+                        if message.idSender === sessionUser.userid
+
+                            // MENSAJES ENVIADOS
+                            .d-flex.justify-content-end.mb-3
+
+                                .bg-primary.text-white.rounded.p-3(
+                                    style="max-width:75%;overflow-wrap:anywhere"
+                                )
+                                    p.mb-1= message.texto
+
+                                    small
+                                        | #{new Date(message.createdAt).toLocaleString('es-AR')}
+
+                        else
+
+                            // MENSAJES RECIBIDOS
+                            .d-flex.justify-content-start.mb-3
+
+                                .bg-light.border.rounded.p-3(
+                                    style="max-width:75%;overflow-wrap:anywhere"
+                                )
+                                    if message.Sender
+                                        strong= message.Sender.fullName
+
+                                    p.mb-1= message.texto
+
+                                    small.text-muted
+                                        | #{new Date(message.createdAt).toLocaleString('es-AR')}
+
+                else
+
+                    p.text-center.text-muted.mt-4
+                        | Todavía no hay mensajes.
+
+                    p.text-center.text-muted
+                        | Iniciá la conversación enviando un mensaje.
+
+            // FORMULARIO PARA ENVIAR MENSAJES
+            .card-footer
+
+                form(
+                    action=`/conversaciones/${conversation.conversationid}/mensaje`
+                    method="POST"
+                )
+
+                    .d-flex.gap-2
+
+                        textarea.form-control(
+                            name="texto"
+                            rows="2"
+                            placeholder="Escribí un mensaje..."
+                            required
+                        )
+
+                        button.btn.btn-primary(type="submit")
+                            | Enviar

@@ -43,13 +43,9 @@ block content
                         // Opciones del perfil propio
                         if sessionUser && sessionUser.userid === user.userid
                             .d-flex.gap-2
-                                a.btn.btn-primary(
-                                    href=`/usuario/${user.userid}/editar`
-                                ) Editar perfil
-
-                                a.btn.btn-outline-primary(
-                                    href="/colecciones"
-                                ) Mis colecciones
+                                a.btn.btn-primary(href=`/usuario/${user.userid}/editar`) Editar perfil
+                                a.btn.btn-outline-primary(href="/colecciones") Mis colecciones
+                                a.btn.btn-outline-success(href="/conversaciones") Mis conversaciones
 
         // Seguidores y seguidos
         .row

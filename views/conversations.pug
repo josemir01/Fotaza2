@@ -1,0 +1,80 @@
+
+extends layout.pug
+
+block content
+
+    .container.mt-4
+
+        h2.mb-4 Mis conversaciones
+
+        if conversations && conversations.length
+
+            each conversation in conversations
+
+                .card.mb-3
+                    .card-body
+
+                        .row.align-items-center
+
+                            // IMAGEN DE INTERÉS
+                            .col-md-3
+
+                                if conversation.Image
+                                    img.img-fluid.rounded(
+                                        src=conversation.Image.image
+                                        style="max-width:150px"
+                                    )
+
+                            // INFORMACIÓN DE LA CONVERSACIÓN
+                            .col-md-6
+
+                                if conversation.idBuyer === sessionUser.userid
+
+                                    h5= conversation.Author.fullName
+
+                                    p.text-muted
+                                        | Estás interesado en su imagen.
+
+                                    a(
+                                        href=`/usuario/${conversation.Author.userid}`
+                                    )
+                                        | Ver perfil del autor
+
+                                else
+
+                                    h5= conversation.Buyer.fullName
+
+                                    p.text-muted
+                                        | Está interesado en adquirir tu imagen.
+
+                                    a(
+                                        href=`/usuario/${conversation.Buyer.userid}`
+                                    )
+                                        | Ver perfil del interesado
+
+                                if conversation.Image && conversation.Image.Post
+
+                                    p.mt-2.mb-1
+                                        strong Publicación: 
+                                        | #{conversation.Image.Post.title}
+
+                                    a(
+                                        href=`/post/${conversation.Image.Post.postid}`
+                                    )
+                                        | Ver publicación
+
+                            // ABRIR CONVERSACIÓN
+                            .col-md-3.text-end
+
+                                a.btn.btn-primary(
+                                    href=`/conversaciones/${conversation.conversationid}`
+                                )
+                                    | Abrir conversación
+
+        else
+
+            .alert.alert-info
+                | Todavía no tenés conversaciones.
+
+        a.btn.btn-secondary.mt-3(href="/profile")
+            | Volver a mi perfil
