@@ -9,8 +9,10 @@ block content
       .card.shadow
         .card-body
           h2.mb-4 Crear nueva publicación
+
           if error
             .alert.alert-danger= error
+
           form(action="/post/crear", method="POST")
             .mb-3
               label.form-label(for="titulo") Titulo
@@ -18,32 +20,29 @@ block content
                 type="text",
                 name="titulo",
               )
+
             .mb-3
               label.form-label(for="descripcion") Descripcion (opcional)
               textarea#descripcion.form-control(
                 name="descripcion",
                 rows="3",
               )
+
             .mb-3
               label.form-label(for="imagenes") Imagenes
               input#imagenes.form-control(
                 type="file",
                 name="imagenes",
                 accept="image/*",
-                multiple, 
+                multiple,
               )
+
             .mb-3
-              input(type="hidden" name="imagenBase64" id="imagenBase64",)
-              div#preview.d-flex.flex-wrap.gap-2.mt-2
-            .mb-3
-              label.form-label(for="opciones") Etiquetas
-              select#opciones.form-select(name="opciones")
-                option(value="", disabled, selected) -- Seleccioná un hashtag --
-                if allTags && allTags.length > 0
-                  each tag in allTags
-                    option(value=tag.hashtagid)= tag.name
-                else
-                  option(disabled) No hay hashtags disponibles
-            button.btn.btn-success.w-100(type="submit") Publicar
-            script(src=" /imagenBase64.js")
+              label.form-label(for="nuevosHashtags") Hashtags (opcional)
+              input#nuevosHashtags.form-control(
+                type="text",
+                name="nuevosHashtags",
+                placeholder="Ej: musica, guitarra, rock",
+              )
+              small.text-muted Separá los hashtags con comas.
 

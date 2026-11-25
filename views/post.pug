@@ -80,14 +80,12 @@ block content
                         form(action="/post/buscar" method="GET")
                             .input-group
 
-                                select.form-select(name="hashtagId" required)
-                                    option(value="") Seleccionar hashtag
-
-                                    if allTags && allTags.length
-                                        each tag in allTags
-                                            option(value=tag.hashtagid)= tag.name
-                                    else
-                                        option(disabled) No hay hashtags
+                                input.form-control(
+                                    type="search"
+                                    name="hashtag"
+                                    placeholder="Buscar por hashtag..."
+                                    required
+                                )
 
                                 button.btn.btn-primary(type="submit")
                                     i.bi.bi-search.me-2

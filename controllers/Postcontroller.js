@@ -52,16 +52,19 @@ async function fetchAllHashtags() {
     })
 }
 
-// GET /post/hashtag/:hashtagId
+// GET /post/buscar?hashtag=nombre
 export async function searchPostsByHashtag(req, res) {
-    const hashtagId = Number(req.query.hashtagId)
+    const nombre = req.query.hashtag || ''
 
-    if (!hashtagId) {
+    if (!nombre.trim()) {
         return res.redirect('/post')
     }
 
     try {
-        const tag = await Hashtag.findByPk(hashtagId, {
+        const tag = await Hashtag.findOne({
+            where: {
+                name: nombre.trim().toLowerCase()
+            },
             include: [{
                 model: Post,
                 through: { attributes: [] },
@@ -294,7 +297,7 @@ export async function rateImage(req, res) {
             })
         }
 
-        
+
 
         // Crear valoración
         await Rating.create({
@@ -302,7 +305,7 @@ export async function rateImage(req, res) {
             idUser: userId,
             idImage: imageId
         })
-        
+
         // Crear notificación para el autor
         await createNotification(
             'rating',
@@ -594,7 +597,7 @@ export async function createPost(req, res) {
     }
 
     try {
-        const { descripcion, titulo, imagenBase64, opciones } = req.body
+        const { descripcion, titulo, imagenBase64, nuevosHashtags } = req.body
         const userId = req.session.user.userid
 
         // Recibir las imágenes con sus configuraciones
@@ -697,9 +700,23 @@ export async function createPost(req, res) {
             })
         }
 
-        // Guardar hashtags
-        if (opciones) {
-            await post.addHashtags(opciones)
+        // Crear nuevos hashtags
+        if (nuevosHashtags) {
+            const nombres = nuevosHashtags.split(',')
+
+            for (const nombre of nombres) {
+                const nombreTag = nombre.trim().toLowerCase().replace(/^#+/, '')
+
+                if (nombreTag) {
+                    const [hashtag] = await Hashtag.findOrCreate({
+                        where: {
+                            name: nombreTag
+                        }
+                    })
+
+                    await post.addHashtag(hashtag)
+                }
+            }
         }
 
         res.redirect('/post')
