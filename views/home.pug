@@ -1,5 +1,59 @@
-extends layout.pug 
+extends layout.pug
 
-block content 
-    h1 bienvenido a fotaza 
-    p sube y comparte tus fotos con los demas 
+block content
+    .container.mt-4
+
+        .card.shadow-sm.mb-5
+            .card-body.text-center.p-5
+
+                h1.fw-bold Bienvenido a Fotaza
+
+                p.lead.text-muted
+                    | Descubrí, compartí y valorá fotografías de nuestra comunidad.
+
+                a.btn.btn-primary.me-2(href="/post")
+                    | Explorar publicaciones
+
+                if user
+                    a.btn.btn-outline-primary(href="/post/crear")
+                        | Crear publicación
+                else
+                    a.btn.btn-outline-primary(href="/registro")
+                        | Registrarse
+
+        h3.mb-3
+            i.bi.bi-star-fill.text-warning.me-2
+            | Publicaciones destacadas
+
+        hr
+
+        if destacadas && destacadas.length
+            .row.g-4
+                each post in destacadas
+                    .col-md-4
+                        .card.shadow-sm.h-100
+
+                            img.card-img-top(
+                                src=post.imagenDestacada
+                                style="height:250px; object-fit:contain; background:#000;"
+                            )
+
+                            .card-body
+                                h5.card-title= post.title
+
+                                p.text-muted
+                                    | Publicado por: 
+                                    a(href=`/usuario/${post.User.userid}`)
+                                        = post.User.fullName
+
+                                p.text-warning.fw-bold
+                                    i.bi.bi-star-fill.me-1
+                                    | #{post.mejorPromedio.toFixed(1)} / 5
+
+                                a.btn.btn-primary.w-100(
+                                    href=`/post/${post.postid}`
+                                )
+                                    | Ver publicación
+        else
+            p.text-muted.text-center
+                | Todavía no hay publicaciones destacadas.

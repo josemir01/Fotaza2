@@ -333,7 +333,7 @@ export async function rateImage(req, res) {
 
 //Post
 
-// GET /post — todas las publicaciones (home o listado)
+// GET /post — todas las publicaciones
 export async function getPosts(req, res) {
     try {
         const posts = await Post.findAll({
@@ -375,67 +375,25 @@ export async function getPosts(req, res) {
             )
         }
 
-        const postsVisibles = posts.filter(post => post.Images.length > 0)
-
-        // Calcular promedio de cada publicación
-        for (const post of postsVisibles) {
-
-            let mejorPromedio = 0
-            let esDestacada = false
-
-            for (const img of post.Images || []) {
-
-                const ratings = img.Ratings || []
-
-                if (ratings.length > 0) {
-
-                    let suma = 0
-
-                    for (const rating of ratings) {
-                        suma = suma + rating.value
-                    }
-
-                    const promedio = suma / ratings.length
-
-                    if (promedio > mejorPromedio) {
-                        mejorPromedio = promedio
-                    }
-                    if (ratings.length >= 3 && promedio > 4) {
-                        esDestacada = true
-                    }
-                }
-            }
-
-            post.mejorPromedio = mejorPromedio
-            post.esDestacada = esDestacada
-        }
-
-        // Priorizar publicaciones con promedio > 4 y mínimo 3 votos
-        postsVisibles.sort((a, b) => {
-            const destacadaA = a.esDestacada
-            const destacadaB = b.esDestacada
-
-            if (destacadaA !== destacadaB) {
-                if (destacadaA) {
-                    return -1
-                } else {
-                    return 1
-                }
-            }
-
-            return 0
-        })
-
+        const postsVisibles = posts.filter(
+            post => post.Images.length > 0
+        )
 
         const allTags = await fetchAllHashtags()
-        console.log(allTags)
-        res.render('post', { posts, allTags, usuariosSeguidos })
+
+        res.render('post', {
+            posts: postsVisibles,
+            allTags,
+            usuariosSeguidos
+        })
+
     } catch (error) {
         console.error('Error al obtener publicaciones:', error)
-        res.status(500).render('error', { msg: 'Error al obtener las publicaciones' })
+        res.status(500).render('error', {
+            msg: 'Error al obtener las publicaciones'
+        })
     }
 }
-
 // GET /post/:postId — detalle de una publicación
 export async function getPostById(req, res) {
     const postId = Number(req.params.postId)
@@ -571,6 +529,78 @@ export async function getPostsByUserId(req, res) {
     } catch (error) {
         console.error('Error al obtener publicaciones del usuario:', error)
         res.status(500).render('error', { msg: 'Error al obtener las publicaciones del usuario' })
+    }
+}
+
+// GET / — página de inicio
+export async function getHome(req, res) {
+    try {
+        const posts = await Post.findAll({
+            where: {
+                estadoPublicacion: 'activa'
+            },
+            include: [
+                {
+                    model: User,
+                    attributes: ['userid', 'fullName', 'avatar']
+                },
+                {
+                    model: Image,
+                    as: 'Images',
+                    where: req.session.user ? {} : { copyright: false },
+                    required: true,
+                    include: [{
+                        model: Rating
+                    }]
+                }
+            ]
+        })
+
+        const destacadas = []
+
+        for (const post of posts) {
+
+            let mejorPromedio = 0
+            let esDestacada = false
+
+            for (const img of post.Images) {
+
+                const ratings = img.Ratings || []
+
+                if (ratings.length >= 3) {
+                    let suma = 0
+                    for (const rating of ratings) {
+                        suma = suma + rating.value
+                    }
+                    const promedio = suma / ratings.length
+                    if (promedio >= 4) {
+                        esDestacada = true
+                        if (promedio > mejorPromedio) {
+                            mejorPromedio = promedio
+                            post.imagenDestacada = img.image
+                        }
+                    }
+                }
+            }
+
+            if (esDestacada) {
+                post.mejorPromedio = mejorPromedio
+                destacadas.push(post)
+            }
+        }
+
+        // Ordenar de mayor a menor valoración
+        destacadas.sort((a, b) => {
+            return b.mejorPromedio - a.mejorPromedio
+        })
+
+        res.render('home', { destacadas })
+
+    } catch (error) {
+        console.error('Error al obtener el inicio:', error)
+        res.status(500).render('error', {
+            msg: 'Error al cargar la página de inicio'
+        })
     }
 }
 

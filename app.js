@@ -12,6 +12,7 @@ import NotificationRoute from './routers/NotificationRoute.js'
 import './models/index.js'
 import { connectDatabase } from './models/index.js'
 import { checkUserActive } from './middlewares/checkUserActive.js'
+import { getHome } from './controllers/Postcontroller.js'
 import session from 'express-session'
 const app = express()
 
@@ -59,12 +60,9 @@ app.use('/conversaciones',ConversationRoute)
 app.use('/notificaciones',NotificationRoute)
 
 //pagina de inicio
-app.get("/", (req, res) => {
-    res.render("home")
-})
-app.get('/login', (req, res) => {
-    res.render('login')
-})
+app.get("/", getHome)
+ 
+
 
 
 // CONEXION A BD
