@@ -22,10 +22,13 @@ html(lang="es")
         .d-flex.gap-3.text-white
           a.text-white.text-decoration-none(href="/home") Inicio
           a.text-white.text-decoration-none(href="/post") Publicaciones
-          a.text-white.text-decoration-none(href="/post/crear") Crear Publicaciones    
+          
           if user
+              a.text-white.text-decoration-none(href="/post/crear") Crear Publicaciones    
               a.text-white.text-decoration-none(href="/post/siguiendo") Siguiendo
               a.text-white.text-decoration-none(href="/profile") Perfil
+              if user.rol ==='ADMIN'
+                a.text-white.text-decoration-none(href="/admin") Moderador
               a.text-white.text-decoration-none(href="/logout") Cerrar sesion
               a.text-white.text-decoration-none(href="/notificaciones")
                 i.bi.bi-bell

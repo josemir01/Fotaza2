@@ -5,8 +5,56 @@ import { User } from '../models/User.js'
 export async function getLogin(req, res) {
     res.render('login')
 }
+// GET /registro — mostrar formulario de registro
+export async function getRegister(req, res) {
+    res.render('signin')
+}
 
 
+// POST /registro — crear nuevo usuario
+export async function createUser(req, res) {
+    try {
+        const { fullName, email, password, confirmPassword, birthDate } = req.body
+
+        // Validaciones básicas
+        if (!fullName || !email || !password) {
+            return res.status(400).render('signin', {
+                error: 'Nombre, email y contraseña son obligatorios'
+            })
+        }
+
+        //Verificar si las contraseñas coinciden
+        if (password !== confirmPassword) {
+            return res.status(400).render('sigin', {
+                error: 'Las contraseñas no coinciden'
+            })
+        }
+
+        // Verificar si el email ya existe
+        const existing = await User.findOne({ where: { email } })
+        if (existing) {
+            return res.status(400).render('signin', {
+                error: 'Ya existe una cuenta con ese email'
+            })
+        }
+
+        // Hashear la contraseña antes de guardar
+        const hashedPassword = await bcrypt.hash(password, 10)
+
+        const user = await User.create({
+            fullName,
+            email,
+            password: hashedPassword,
+            birthDate: birthDate || null
+        })
+
+        // Redirigir al login tras registro exitoso
+        res.redirect('/login')
+    } catch (error) {
+        console.error('Error al crear el usuario:', error)
+        res.status(500).render('error', { msg: 'Error al registrar el usuario' })
+    }
+}
 
 
 
@@ -52,7 +100,7 @@ export async function loginUser(req, res) {
     }
 }
 
-// POST /logout — cerrar sesión
+// GET /logout — cerrar sesión
 export async function logoutUser(req, res) {
     req.session.destroy((err) => {
         if (err) {

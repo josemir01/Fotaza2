@@ -8,14 +8,17 @@ block content
           .card-body
             h2.text-center.mb-4 Registro de Usuario
 
-            form(action="/register" method="POST")
-              
+            if error
+              .alert.alert-danger= error
+
+            form(action="/registro" method="POST")
+
               .mb-3
-                label.form-label(for="username") Nombre de usuario
-                input#username.form-control(
+                label.form-label(for="fullName") Nombre completo
+                input#fullName.form-control(
                   type="text"
-                  name="username"
-                  placeholder="Ingrese su usuario"
+                  name="fullName"
+                  placeholder="Ingrese su nombre"
                   required
                 )
 
@@ -26,6 +29,13 @@ block content
                   name="email"
                   placeholder="Ingrese su email"
                   required
+                )
+
+              .mb-3
+                label.form-label(for="birthDate") Fecha de nacimiento
+                input#birthDate.form-control(
+                  type="date"
+                  name="birthDate"
                 )
 
               .mb-3
